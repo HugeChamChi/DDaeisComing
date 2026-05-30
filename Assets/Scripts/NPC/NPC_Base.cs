@@ -19,6 +19,7 @@ namespace Bathhouse.NPC
         protected FacilityType _currentDestination;
         protected Action<NPC_Base> _onExit;
         
+        protected Bathhouse.Facilities.FacilityBase _targetFacility;
         private bool _isActionForcedToFinish = false;
         private bool _isActionTimerPaused = false;
 
@@ -43,30 +44,68 @@ namespace Bathhouse.NPC
             DecideNextAction();
         }
 
+        protected virtual void Update()
+        {
+            // 이동 중에 목표 시설이 꽉 찼는지 실시간 감시
+            if (_movement != null && _movement.IsMoving && _targetFacility != null)
+            {
+                if (!_targetFacility.CanEnter())
+                {
+                    Debug.Log($"[{Data.name}] 이동 중에 {_currentDestination} 자리가 찼음! 다른 곳으로 재탐색...");
+                    _movement.StopMoving();
+                    _targetFacility = null;
+                    MoveToTargetFacility(_currentDestination);
+                }
+            }
+        }
+
         protected virtual void DecideNextAction()
         {
             _currentDestination = _brain.DetermineNextFacility();
             Debug.Log($"[NPC_Base] {_data.name}의 다음 목표가 결정되었습니다: {_currentDestination}");
 
-            // 가장 가깝고 "자리가 비어있는" 시설 찾기
-            Bathhouse.Facilities.FacilityBase targetFacility = FacilityManager.Instance.GetNearestAvailableFacility(_currentDestination, transform.position);
+            MoveToTargetFacility(_currentDestination);
+        }
 
-            if (targetFacility == null)
+        /// <summary>
+        /// 특정 타입의 시설 중 이용 가능한 곳을 찾아 이동합니다.
+        /// </summary>
+        protected virtual void MoveToTargetFacility(FacilityType type)
+        {
+            // 가장 가깝고 "자리가 비어있는" 시설 찾기
+            _targetFacility = FacilityManager.Instance.GetNearestAvailableFacility(type, transform.position);
+
+            if (_targetFacility == null)
             {
-                Debug.Log($"[{Data.name}] {_currentDestination} 시설이 모두 꽉 차서 2초 대기 후 다른 행동 탐색...");
-                Invoke(nameof(DecideNextAction), 2f);
+                Debug.Log($"[{Data.name}] {type} 시설이 모두 꽉 찼습니다. 즉시 다음 행동 탐색...");
+                StartCoroutine(WaitAndDecide(0.1f)); // 무한 루프 방지를 위해 아주 짧은 찰나(0.1초) 대기 후 재결정
                 return;
             }
 
-            Vector3 targetPos = targetFacility.transform.position;
+            Vector3 targetPos = _targetFacility.transform.position;
             var path = _pathfindingService.FindPath(transform.position, targetPos);
             
-            _movement.MoveAlongPath(path, () => StartCoroutine(PerformActionRoutine(targetFacility)));
+            _movement.MoveAlongPath(path, () => 
+            {
+                // [도착 후 최종 확인]
+                if (_targetFacility != null && _targetFacility.CanEnter())
+                {
+                    var facilityToEnter = _targetFacility;
+                    _targetFacility = null; 
+                    StartCoroutine(PerformActionRoutine(facilityToEnter));
+                }
+                else
+                {
+                    Debug.Log($"[{Data.name}] 도착했으나 그 사이 {type} 자리가 찼음! 다시 재탐색...");
+                    _targetFacility = null;
+                    MoveToTargetFacility(type);
+                }
+            });
         }
 
-        private System.Collections.IEnumerator WaitAndRetry()
+        private System.Collections.IEnumerator WaitAndDecide(float delay)
         {
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(delay);
             DecideNextAction();
         }
 
@@ -83,7 +122,12 @@ namespace Bathhouse.NPC
         protected virtual System.Collections.IEnumerator PerformActionRoutine(Bathhouse.Facilities.IFacility facility)
         {
             int slot = facility.GetAvailableSlotIndex();
-            if (slot == -1) slot = 0; // 꽉 찼을 경우 임시로 0번에 겹쳐서 진행
+            if (slot == -1) 
+            {
+                // 혹시나 찰나의 순간에 꽉 찼다면 다시 탐색
+                MoveToTargetFacility(_currentDestination);
+                yield break;
+            }
 
             facility.EnterFacility(this, slot);
             float waitTime = facility.GetUsageTime();

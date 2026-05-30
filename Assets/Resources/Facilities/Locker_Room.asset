@@ -22,5 +22,6 @@ MonoBehaviour:
   - {x: 0, y: -1}
   maxCapacity: 1
   baseUseTime: 2
+  usageCooldown: 3
   cost: 100
   cleanlinessDropPerUse: 5

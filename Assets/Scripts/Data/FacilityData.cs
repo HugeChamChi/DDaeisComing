@@ -22,6 +22,7 @@ namespace Bathhouse.Data
         [Header("Usage Settings")]
         public int maxCapacity = 1;       // 최대 수용 인원
         public float baseUseTime = 2f;    // 기본 이용 시간 (초)
+        public float usageCooldown = 0f;  // 이용 후 재사용 대기 시간 (초)
         public int cost = 100;            // 이용 요금 / 수익
 
         [Header("Cleanliness")]

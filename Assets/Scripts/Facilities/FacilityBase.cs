@@ -21,6 +21,7 @@ namespace Bathhouse.Facilities
 
         // 시설을 사용 중인 NPC들을 추적 (배열 인덱스가 곧 '자리(Slot)' 번호)
         protected NPC.NPC_Base[] _occupants;
+        protected float[] _slotCooldowns;
 
         /// <summary>
         /// 인게임 맵 로딩 시 매니저가 호출하여 초기화합니다.
@@ -37,25 +38,39 @@ namespace Bathhouse.Facilities
             
             // 수용 인원만큼 슬롯 배열 할당
             _occupants = new NPC.NPC_Base[_data.maxCapacity];
+            _slotCooldowns = new float[_data.maxCapacity];
+        }
+
+        protected virtual void Update()
+        {
+            if (_slotCooldowns == null) return;
+            for (int i = 0; i < _slotCooldowns.Length; i++)
+            {
+                if (_slotCooldowns[i] > 0)
+                {
+                    _slotCooldowns[i] -= Time.deltaTime;
+                    if (_slotCooldowns[i] < 0) _slotCooldowns[i] = 0;
+                }
+            }
         }
 
         /// <summary>
-        /// 현재 NPC가 이 시설에 입장 가능한지 여부 (수용 인원 꽉 찼는지 등)
+        /// 현재 NPC가 이 시설에 입장 가능한지 여부 (수용 인원 꽉 찼는지, 쿨타임 중인지 등)
         /// </summary>
         public virtual bool CanEnter()
         {
-            return _data != null && _currentUsers < _data.maxCapacity;
+            return _data != null && GetAvailableSlotIndex() != -1;
         }
 
         /// <summary>
-        /// 비어있는 자리(Slot Index)를 찾아서 반환합니다. 꽉 찼다면 -1 반환.
+        /// 비어있는 자리(Slot Index)를 찾아서 반환합니다. (사람이 없고 쿨타임도 끝난 자리)
         /// </summary>
         public virtual int GetAvailableSlotIndex()
         {
-            if (_occupants == null) return -1;
+            if (_occupants == null || _slotCooldowns == null) return -1;
             for (int i = 0; i < _occupants.Length; i++)
             {
-                if (_occupants[i] == null) return i;
+                if (_occupants[i] == null && _slotCooldowns[i] <= 0) return i;
             }
             return -1;
         }
@@ -106,6 +121,11 @@ namespace Bathhouse.Facilities
             if (slotIndex >= 0 && slotIndex < _occupants.Length)
             {
                 _occupants[slotIndex] = null;
+                // 쿨타임 설정
+                if (_data != null)
+                {
+                    _slotCooldowns[slotIndex] = _data.usageCooldown;
+                }
             }
             _currentUsers--;
             _currentCleanliness -= _data.cleanlinessDropPerUse;
