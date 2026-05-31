@@ -19,6 +19,9 @@ namespace Bathhouse.Tools
         [Header("Save/Load")]
         public string fileName = "UserCustomMap.json";
 
+        [Header("Debug")]
+        public bool showDebugGrid = true;
+
         private MapData _mapData;
         private Camera _mainCam;
 
@@ -106,7 +109,7 @@ namespace Bathhouse.Tools
 
         private void OnDrawGizmos()
         {
-            if (_mapData == null || _mapData.tiles == null) return;
+            if (!showDebugGrid || _mapData == null || _mapData.tiles == null) return;
 
             foreach (var tile in _mapData.tiles)
             {

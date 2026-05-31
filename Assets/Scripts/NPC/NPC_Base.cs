@@ -82,7 +82,8 @@ namespace Bathhouse.NPC
                 return;
             }
 
-            Vector3 targetPos = _targetFacility.transform.position;
+            // 시설 자체가 아닌, 시설의 '상호작용 위치(O 마커)'로 길찾기 수행
+            Vector3 targetPos = _targetFacility.GetMainInteractionWorldPosition();
             var path = _pathfindingService.FindPath(transform.position, targetPos);
             
             _movement.MoveAlongPath(path, () => 

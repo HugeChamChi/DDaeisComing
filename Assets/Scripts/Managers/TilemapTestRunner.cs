@@ -22,6 +22,9 @@ namespace Bathhouse.Managers
         [Tooltip("NPC를 생성하고 관리할 스포너")]
         [SerializeField] private NPCSpawner npcSpawner;
 
+        [Header("Debug")]
+        public bool showDebugGrid = true;
+
         private void Start()
         {
             // 1. 타일맵 예외 처리: 타일맵이 할당되지 않았다면 에러를 띄웁니다.
@@ -50,7 +53,7 @@ namespace Bathhouse.Managers
         /// </summary>
         private void OnDrawGizmos()
         {
-            if (!Application.isPlaying || floorTilemap == null) return;
+            if (!showDebugGrid || !Application.isPlaying || floorTilemap == null) return;
             
             // 런타임 중에는 IGridMap을 직접 시각화해볼 수 있습니다.
             // 여기서는 성능을 위해 간단히 Bounds 기반으로 체크합니다.

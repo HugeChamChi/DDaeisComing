@@ -24,6 +24,9 @@ namespace Bathhouse.Managers
         [Tooltip("NPC를 생성하고 관리할 스포너")]
         [SerializeField] private NPCSpawner npcSpawner;
 
+        [Header("Debug")]
+        public bool showDebugGrid = true;
+
         private CustomGridMap _gridMap;
 
         private void Start()
@@ -118,7 +121,7 @@ namespace Bathhouse.Managers
 
         private void OnDrawGizmos()
         {
-            if (!Application.isPlaying || _gridMap == null) return;
+            if (!showDebugGrid || !Application.isPlaying || _gridMap == null) return;
 
             // 디버깅 용도로 현재 그리드 상태를 시각화합니다.
             for (int x = 0; x < _gridMap.Width; x++) 

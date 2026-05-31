@@ -40,49 +40,54 @@ namespace Bathhouse.Managers
                     _facilities[facility.facilityType] = new List<FacilityBase>();
                 }
 
-                // 나중에 프리팹을 붙일 수 있도록 임시 빈 오브젝트에 해당 컴포넌트들을 달아줍니다.
-                GameObject go = new GameObject($"[Facility] {facility.facilityType}");
-                go.transform.SetParent(this.transform);
-
-                // 컴포넌트를 동적으로 붙여줍니다.
-                FacilityBase facInstance = null;
-                switch (facility.facilityType)
-                {
-                    case FacilityType.Counter: facInstance = go.AddComponent<CounterFacility>(); break;
-                    case FacilityType.LockerRoom: facInstance = go.AddComponent<LockerRoomFacility>(); break;
-                    case FacilityType.Shower: facInstance = go.AddComponent<ShowerFacility>(); break;
-                    case FacilityType.HotBath: facInstance = go.AddComponent<HotBathFacility>(); break;
-                    case FacilityType.Sauna: facInstance = go.AddComponent<SaunaFacility>(); break;
-                    case FacilityType.ScrubArea: facInstance = go.AddComponent<ScrubAreaFacility>(); break;
-                    default: facInstance = go.AddComponent<HotBathFacility>(); break; // fallback
-                }
-
-                // Interaction Point 계산 (구조물 중앙 하단)
-                float centerX = facility.originX + (facility.sizeX - 1) / 2f;
-                float interactY = facility.originY - 1f;
-
-                Vector3 interactPos = new Vector3(
-                    centerX * nodeSize + (nodeSize / 2f),
-                    interactY * nodeSize + (nodeSize / 2f),
-                    0f
-                );
-                
-                go.transform.position = interactPos;
-
-                // 캐시된 FacilityData가 있으면 넘겨줌
+                // 1. FacilityData 로드
                 FacilityData soData = null;
-                if (_facilityDataCache.TryGetValue(facility.facilityType, out soData))
+                _facilityDataCache.TryGetValue(facility.facilityType, out soData);
+
+                GameObject go = null;
+                
+                // 2. 프리팹이 있으면 프리팹 생성, 없으면 기존처럼 빈 오브젝트 생성
+                if (soData != null && soData.visualPrefab != null)
                 {
-                    facInstance.Initialize(soData, facility.originX, facility.originY, nodeSize);
+                    go = Instantiate(soData.visualPrefab, this.transform);
+                    go.name = $"[Facility] {facility.facilityType}";
                 }
                 else
                 {
-                    Debug.LogWarning($"[FacilityManager] {facility.facilityType}에 해당하는 FacilityData를 Resources/Facilities 폴더에서 찾지 못했습니다.");
-                    facInstance.Initialize(null, facility.originX, facility.originY, nodeSize);
+                    go = new GameObject($"[Facility] {facility.facilityType}");
+                    go.transform.SetParent(this.transform);
                 }
 
+                // 3. 컴포넌트 확인 및 동적 추가 (프리팹에 이미 붙어있을 수도 있음)
+                FacilityBase facInstance = go.GetComponent<FacilityBase>();
+                if (facInstance == null)
+                {
+                    facInstance = AddFacilityComponent(go, facility.facilityType);
+                }
+
+                // 4. 초기화 및 위치 설정
+                facInstance.Initialize(soData, facility.originX, facility.originY, nodeSize);
+                // facInstance.Initialize 내부에서 RefreshPosition()이 호출됩니다.
+
                 _facilities[facility.facilityType].Add(facInstance);
-                Debug.Log($"[FacilityManager] {facility.facilityType} 인스턴스화 완료. 상호작용 좌표: {interactPos}");
+                Debug.Log($"[FacilityManager] {facility.facilityType} 생성 완료.");
+            }
+        }
+
+        /// <summary>
+        /// 타입에 맞는 Facility 컴포넌트를 동적으로 추가합니다.
+        /// </summary>
+        private FacilityBase AddFacilityComponent(GameObject go, FacilityType type)
+        {
+            switch (type)
+            {
+                case FacilityType.Counter: return go.AddComponent<CounterFacility>();
+                case FacilityType.LockerRoom: return go.AddComponent<LockerRoomFacility>();
+                case FacilityType.Shower: return go.AddComponent<ShowerFacility>();
+                case FacilityType.HotBath: return go.AddComponent<HotBathFacility>();
+                case FacilityType.Sauna: return go.AddComponent<SaunaFacility>();
+                case FacilityType.ScrubArea: return go.AddComponent<ScrubAreaFacility>();
+                default: return go.AddComponent<HotBathFacility>();
             }
         }
 

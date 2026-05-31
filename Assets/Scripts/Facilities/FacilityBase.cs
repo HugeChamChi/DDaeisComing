@@ -39,6 +39,47 @@ namespace Bathhouse.Facilities
             // 수용 인원만큼 슬롯 배열 할당
             _occupants = new NPC.NPC_Base[_data.maxCapacity];
             _slotCooldowns = new float[_data.maxCapacity];
+
+            RefreshPosition();
+        }
+
+        protected virtual void OnEnable()
+        {
+            FacilityData.OnDataChanged += HandleDataChanged;
+        }
+
+        protected virtual void OnDisable()
+        {
+            FacilityData.OnDataChanged -= HandleDataChanged;
+        }
+
+        private void HandleDataChanged(FacilityData data)
+        {
+            if (_data == data)
+            {
+                RefreshPosition();
+            }
+        }
+
+        /// <summary>
+        /// 데이터의 visualOffset과 그리드 좌표를 기반으로 실제 월드 위치를 갱신합니다.
+        /// </summary>
+        public void RefreshPosition()
+        {
+            if (_data == null) return;
+
+            // 시설이 차지하는 영역의 중앙(Center) 기준 배치
+            float centerX = GridX + (_data.width / 2f);
+            float centerY = GridY + (_data.height / 2f);
+
+            Vector3 worldPos = new Vector3(
+                centerX * _nodeSize,
+                centerY * _nodeSize,
+                0f
+            );
+
+            worldPos += _data.visualOffset;
+            transform.position = worldPos;
         }
 
         protected virtual void Update()
@@ -160,6 +201,19 @@ namespace Bathhouse.Facilities
                 positions.Add(new Vector2Int(GridX, GridY)); // Fallback
             }
             return positions;
+        }
+
+        /// <summary>
+        /// 첫 번째 상호작용 지점의 월드 좌표를 반환합니다. (길찾기 목적지용)
+        /// </summary>
+        public virtual Vector3 GetMainInteractionWorldPosition()
+        {
+            var gridPos = GetInteractionGridPositions()[0];
+            return new Vector3(
+                gridPos.x * _nodeSize + (_nodeSize / 2f),
+                gridPos.y * _nodeSize + (_nodeSize / 2f),
+                0f
+            );
         }
     }
 }

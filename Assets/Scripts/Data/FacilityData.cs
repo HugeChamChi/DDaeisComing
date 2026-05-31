@@ -27,5 +27,21 @@ namespace Bathhouse.Data
 
         [Header("Cleanliness")]
         public float cleanlinessDropPerUse = 5f; // 한 명 사용할 때마다 깎이는 청결도
+
+        [Header("Visual Settings")]
+        [Tooltip("실제 씬에 배치될 프리팹 (SpriteRenderer, Animator 등 포함)")]
+        public GameObject visualPrefab;
+
+        [Tooltip("배치 시 미세 조정을 위한 오프셋")]
+        public Vector3 visualOffset = Vector3.zero;
+
+        public static event System.Action<FacilityData> OnDataChanged;
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            OnDataChanged?.Invoke(this);
+        }
+#endif
     }
 }
