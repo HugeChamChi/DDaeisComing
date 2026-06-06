@@ -35,5 +35,9 @@ MonoBehaviour:
   - {x: 4, y: 4}
   maxCapacity: 5
   baseUseTime: 2
+  usageCooldown: 0
   cost: 100
   cleanlinessDropPerUse: 5
+  visualPrefab: {fileID: 2783644997720154662, guid: aa59c1f18e0207141817067b3334a928,
+    type: 3}
+  visualOffset: {x: 0, y: 0, z: 0}

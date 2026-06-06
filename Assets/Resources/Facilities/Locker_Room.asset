@@ -27,4 +27,4 @@ MonoBehaviour:
   cleanlinessDropPerUse: 5
   visualPrefab: {fileID: 2783644997720154662, guid: aa59c1f18e0207141817067b3334a928,
     type: 3}
-  visualOffset: {x: 0, y: 0.15, z: 0}
+  visualOffset: {x: 0, y: 0.43, z: 0}

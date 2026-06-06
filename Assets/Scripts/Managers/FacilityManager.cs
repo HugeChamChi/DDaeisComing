@@ -75,6 +75,33 @@ namespace Bathhouse.Managers
         }
 
         /// <summary>
+        /// 씬에 이미 배치된 구조물을 매니저에 등록하고 초기화합니다.
+        /// </summary>
+        public void RegisterSceneFacility(GameObject go, FacilityData soData, int gridX, int gridY, float nodeSize)
+        {
+            if (soData == null) return;
+
+            if (!_facilities.ContainsKey(soData.facilityType))
+            {
+                _facilities[soData.facilityType] = new List<FacilityBase>();
+            }
+
+            FacilityBase facInstance = go.GetComponent<FacilityBase>();
+            if (facInstance == null)
+            {
+                facInstance = AddFacilityComponent(go, soData.facilityType);
+            }
+
+            facInstance.Initialize(soData, gridX, gridY, nodeSize);
+
+            if (!_facilities[soData.facilityType].Contains(facInstance))
+            {
+                _facilities[soData.facilityType].Add(facInstance);
+                Debug.Log($"[FacilityManager] 씬 배치된 {soData.facilityType} 등록 완료.");
+            }
+        }
+
+        /// <summary>
         /// 타입에 맞는 Facility 컴포넌트를 동적으로 추가합니다.
         /// </summary>
         private FacilityBase AddFacilityComponent(GameObject go, FacilityType type)
