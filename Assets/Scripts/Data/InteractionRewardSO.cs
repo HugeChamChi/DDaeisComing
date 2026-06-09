@@ -1,3 +1,4 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Bathhouse.Data
@@ -25,7 +26,7 @@ namespace Bathhouse.Data
         public int[] rewardTiers = new int[4] { 10, 5, -5, -10 };
 
         [Header("Icons")]
-        public System.Collections.Generic.List<InteractionIconMapping> iconMappings;
+        public List<InteractionIconMapping> iconMappings;
 
         public Sprite GetIcon(InteractionBubbleType type)
         {

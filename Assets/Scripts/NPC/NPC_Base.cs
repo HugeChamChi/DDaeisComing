@@ -1,3 +1,5 @@
+﻿using Bathhouse.Managers;
+using System.Collections.Generic;
 using UnityEngine;
 using Bathhouse.Data;
 using Bathhouse.Pathfinding;
@@ -27,7 +29,7 @@ namespace Bathhouse.NPC
         private bool _isActionForcedToFinish = false;
         private bool _isActionTimerPaused = false;
         
-        protected System.Collections.Generic.HashSet<Bathhouse.Facilities.FacilityBase> _unreachableFacilities = new System.Collections.Generic.HashSet<Bathhouse.Facilities.FacilityBase>();
+        protected HashSet<Bathhouse.Facilities.FacilityBase> _unreachableFacilities = new HashSet<Bathhouse.Facilities.FacilityBase>();
 
         public Data.NPCData Data => _data;
         public NPCRouteController RouteController => _routeController;
@@ -101,7 +103,7 @@ namespace Bathhouse.NPC
         protected virtual void MoveToTargetFacility(FacilityType type)
         {
             // 가장 가깝고 "자리가 비어있는" 시설 찾기
-            _targetFacility = FacilityManager.Instance.GetNearestAvailableFacility(type, transform.position, _unreachableFacilities);
+            _targetFacility = GameManager.Facility.GetNearestAvailableFacility(type, transform.position, _unreachableFacilities);
 
             if (_targetFacility == null)
             {
@@ -121,7 +123,7 @@ namespace Bathhouse.NPC
             }
 
             var targetPositions = _targetFacility.GetAllInteractionWorldPositions();
-            System.Collections.Generic.List<Vector3> validPath = null;
+            List<Vector3> validPath = null;
 
             foreach (var pos in targetPositions)
             {

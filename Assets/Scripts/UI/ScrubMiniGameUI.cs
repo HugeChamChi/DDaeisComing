@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
@@ -140,15 +140,55 @@ namespace Bathhouse.MiniGames
                 gaugeFill.value = _currentGauge;
         }
 
+        private void ApplySatisfactionResult()
+        {
+            if (_currentNPC == null) return;
+
+            // 결과를 4등분 (0~0.25, 0.25~0.5, 0.5~0.75, 0.75~1.0) 하여 만족도 증감
+            // NPC_Base의 CurrentSatisfaction은 0.0 ~ 1.0 (0%~100%) 스케일로 동작합니다.
+            float satisfactionChange = 0f;
+            string resultTier = "";
+
+            if (_currentGauge >= 0.75f) 
+            {
+                // 1등급 (대만족)
+                satisfactionChange = 0.2f; // +20%
+                resultTier = "대만족 (+20%)";
+            }
+            else if (_currentGauge >= 0.5f)
+            {
+                // 2등급 (만족)
+                satisfactionChange = 0.1f; // +10%
+                resultTier = "만족 (+10%)";
+            }
+            else if (_currentGauge >= 0.25f)
+            {
+                // 3등급 (불만)
+                satisfactionChange = -0.1f; // -10%
+                resultTier = "불만 (-10%)";
+            }
+            else
+            {
+                // 4등급 (대불만)
+                satisfactionChange = -0.2f; // -20%
+                resultTier = "대불만 (-20%)";
+            }
+
+            _currentNPC.AddSatisfaction(satisfactionChange);
+            Debug.Log($"[ScrubMiniGame] 결과 게이지: {_currentGauge:F2} -> {resultTier}");
+        }
+
         protected override void GameSuccess()
         {
-            Debug.Log("[ScrubMiniGame] 때밀이 완벽 성공!");
+            ApplySatisfactionResult();
+            Debug.Log("[ScrubMiniGame] 때밀이 미니게임 완료 (성공)");
             base.GameSuccess();
         }
 
         protected override void GameFailed()
         {
-            Debug.Log("[ScrubMiniGame] 시간 초과! 때밀이 실패!");
+            ApplySatisfactionResult();
+            Debug.Log("[ScrubMiniGame] 시간 초과! 때밀이 미니게임 완료 (실패)");
             base.GameFailed();
         }
     }

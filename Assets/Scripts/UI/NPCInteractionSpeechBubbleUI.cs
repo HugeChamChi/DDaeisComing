@@ -1,3 +1,4 @@
+﻿using Bathhouse.Managers;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -176,9 +177,9 @@ namespace Bathhouse.UI
             }
 
             // 애니메이션 종료 후 풀로 반환
-            if (Bathhouse.Managers.InteractionManager.Instance != null)
+            if (GameManager.Interaction != null)
             {
-                Bathhouse.Managers.InteractionManager.Instance.ReturnBubble(this);
+                GameManager.Interaction.ReturnBubble(this);
             }
             else
             {

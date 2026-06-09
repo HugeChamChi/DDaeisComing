@@ -1,3 +1,4 @@
+﻿using Bathhouse.Data;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Bathhouse.Grid;
@@ -29,7 +30,7 @@ namespace Bathhouse.Test
             Debug.Log("[SceneTestRunner] 씬 기반 테스트 환경 초기화 시작...");
 
             // 1. SceneFacilityBuilder 데이터를 MapData 형태로 변환하여 GridMap 생성
-            Bathhouse.Data.MapData mapData = new Bathhouse.Data.MapData
+            MapData mapData = new MapData
             {
                 width = facilityBuilder.gridWidth,
                 height = facilityBuilder.gridHeight,
@@ -48,7 +49,7 @@ namespace Bathhouse.Test
                 if (info.facilityData != null)
                 {
                     // FacilityManager를 통해 씬에 있는 객체를 등록 (초기화 및 컴포넌트 추가 수행)
-                    FacilityManager.Instance.RegisterSceneFacility(
+                    GameManager.Facility.RegisterSceneFacility(
                         info.gameObject, 
                         info.facilityData, 
                         info.gridX, 

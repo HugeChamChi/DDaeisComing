@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Bathhouse.NPC.Animations;
 
 namespace Bathhouse.NPC

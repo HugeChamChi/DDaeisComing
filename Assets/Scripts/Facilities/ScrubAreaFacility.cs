@@ -1,3 +1,6 @@
+﻿using Bathhouse.UI;
+using Bathhouse.Data;
+using Bathhouse.Managers;
 using UnityEngine;
 using Bathhouse.NPC;
 using Bathhouse.MiniGames;
@@ -12,7 +15,7 @@ namespace Bathhouse.Facilities
         [Tooltip("NPC 머리 위에 띄울 '때밀이 요청' UI 프리팹 (WorldSpace Canvas + Button 권장)")]
         public GameObject interactionBubblePrefab; 
 
-        private Dictionary<NPC_Base, Bathhouse.UI.NPCInteractionSpeechBubbleUI> _activeBubbles = new Dictionary<NPC_Base, Bathhouse.UI.NPCInteractionSpeechBubbleUI>();
+        private Dictionary<NPC_Base, NPCInteractionSpeechBubbleUI> _activeBubbles = new Dictionary<NPC_Base, NPCInteractionSpeechBubbleUI>();
         private Dictionary<NPC_Base, bool> _scrubCompleted = new Dictionary<NPC_Base, bool>();
 
         public override void EnterFacility(NPC_Base npc, int slotIndex)
@@ -21,9 +24,9 @@ namespace Bathhouse.Facilities
             
             _scrubCompleted[npc] = false;
 
-            if (Bathhouse.Managers.InteractionManager.Instance != null)
+            if (GameManager.Interaction != null)
             {
-                var bubbleUI = Bathhouse.Managers.InteractionManager.Instance.GetBubble(
+                var bubbleUI = GameManager.Interaction.GetBubble(
                     npc.transform,
                     () => 
                     {
@@ -38,7 +41,7 @@ namespace Bathhouse.Facilities
                         
                         StartScrubMiniGame(npc);
                     },
-                    Bathhouse.Data.InteractionBubbleType.Scrub
+                    InteractionBubbleType.Scrub
                 );
 
                 if (bubbleUI != null)
@@ -51,8 +54,27 @@ namespace Bathhouse.Facilities
         private void StartScrubMiniGame(NPC_Base npc)
         {
             var ui = FindObjectOfType<ScrubMiniGameUI>(true);
+            
+            // 씬에서 못 찾았을 경우 MiniGameManager를 통해 찾기 시도
+            if (ui == null)
+            {
+                var manager = FindObjectOfType<MiniGameManager>(true);
+                if (manager != null && manager.scrubMiniGame != null)
+                {
+                    if (manager.scrubMiniGame.gameObject.scene.rootCount == 0) // 프리팹인 경우
+                    {
+                        ui = Instantiate(manager.scrubMiniGame);
+                    }
+                    else
+                    {
+                        ui = manager.scrubMiniGame;
+                    }
+                }
+            }
+
             if (ui != null)
             {
+                Debug.Log("[ScrubAreaFacility] 때밀이 미니게임 UI를 찾았습니다. 게임을 시작합니다.");
                 // TODO: 추후 GameManager나 DayManager에서 실제 현재 날짜(Day)를 가져와야 함. 일단 1일차로 고정.
                 int currentDay = 1; 
                 ui.StartMiniGame(npc, currentDay, 
@@ -61,6 +83,7 @@ namespace Bathhouse.Facilities
             }
             else
             {
+                Debug.LogError("[ScrubAreaFacility] ScrubMiniGameUI를 씬에서 찾을 수 없어 미니게임을 스킵하고 자동 성공 처리합니다!");
                 OnMiniGameSuccess(npc);
             }
         }
@@ -84,9 +107,9 @@ namespace Bathhouse.Facilities
             // 지정된 시간(baseUseTime)동안 유저가 터치 안해서 그냥 나가는 경우 버블 삭제 처리
             if (_activeBubbles.ContainsKey(npc))
             {
-                if (_activeBubbles[npc] != null && Bathhouse.Managers.InteractionManager.Instance != null) 
+                if (_activeBubbles[npc] != null && GameManager.Interaction != null) 
                 {
-                    Bathhouse.Managers.InteractionManager.Instance.ReturnBubble(_activeBubbles[npc]);
+                    GameManager.Interaction.ReturnBubble(_activeBubbles[npc]);
                 }
                 _activeBubbles.Remove(npc);
             }

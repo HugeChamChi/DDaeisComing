@@ -1,3 +1,4 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Bathhouse.Data;
 
@@ -12,7 +13,7 @@ namespace Bathhouse.Facilities
         [SerializeField] protected FacilityData _data;
         public FacilityData Data => _data;
 
-        public System.Collections.Generic.List<Transform> slots = new System.Collections.Generic.List<Transform>();
+        public List<Transform> slots = new List<Transform>();
 
         public int GridX { get; protected set; }
         public int GridY { get; protected set; }
@@ -250,9 +251,9 @@ namespace Bathhouse.Facilities
         /// NPC가 이 시설을 이용하기 위해 서야 하는 타일의 '그리드 좌표' 목록을 반환합니다.
         /// (카운터 앞, 욕탕 내부 등)
         /// </summary>
-        public virtual System.Collections.Generic.List<Vector2Int> GetInteractionGridPositions()
+        public virtual List<Vector2Int> GetInteractionGridPositions()
         {
-            var positions = new System.Collections.Generic.List<Vector2Int>();
+            var positions = new List<Vector2Int>();
             if (_data.interactionOffsets != null && _data.interactionOffsets.Length > 0)
             {
                 foreach (var offset in _data.interactionOffsets)
@@ -283,9 +284,9 @@ namespace Bathhouse.Facilities
         /// <summary>
         /// 모든 상호작용 지점의 월드 좌표 목록을 반환합니다.
         /// </summary>
-        public virtual System.Collections.Generic.List<Vector3> GetAllInteractionWorldPositions()
+        public virtual List<Vector3> GetAllInteractionWorldPositions()
         {
-            var positions = new System.Collections.Generic.List<Vector3>();
+            var positions = new List<Vector3>();
             var gridPositions = GetInteractionGridPositions();
             foreach (var gridPos in gridPositions)
             {

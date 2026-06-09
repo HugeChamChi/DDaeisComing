@@ -1,3 +1,4 @@
+﻿using Bathhouse.Data;
 using UnityEngine;
 
 namespace Bathhouse.NPC
@@ -148,7 +149,7 @@ namespace Bathhouse.NPC
         }
 
         // 4. 상호작용 애니메이션 (시설 이용 시)
-        public void PlayFacilityAction(Bathhouse.Data.FacilityType facilityType)
+        public void PlayFacilityAction(FacilityType facilityType)
         {
             _isUsingFacility = true;
             string actionName = "Action_" + facilityType.ToString();

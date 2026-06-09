@@ -1,3 +1,4 @@
+﻿using Bathhouse.Data;
 using UnityEngine;
 using System.Collections.Generic;
 using Bathhouse.Data;
@@ -16,7 +17,7 @@ namespace Bathhouse.Tools
         public BuilderMode currentMode = BuilderMode.Placement;
 
         [HideInInspector]
-        public List<Bathhouse.Data.GridTileData> tiles = new List<Bathhouse.Data.GridTileData>();
+        public List<GridTileData> tiles = new List<GridTileData>();
 
         [Header("Grid Config")]
         [Tooltip("공통 맵 설정 (ScriptableObject)")]
@@ -80,7 +81,7 @@ namespace Bathhouse.Tools
                 {
                     if (!tiles.Exists(t => t.x == x && t.y == y))
                     {
-                        tiles.Add(new Bathhouse.Data.GridTileData { x = x, y = y, isWalkable = true });
+                        tiles.Add(new GridTileData { x = x, y = y, isWalkable = true });
                     }
                 }
             }
@@ -102,7 +103,7 @@ namespace Bathhouse.Tools
             {
                 for (int x = 0; x < gridWidth; x++)
                 {
-                    tiles.Add(new Bathhouse.Data.GridTileData { x = x, y = y, isWalkable = true });
+                    tiles.Add(new GridTileData { x = x, y = y, isWalkable = true });
                 }
             }
         }

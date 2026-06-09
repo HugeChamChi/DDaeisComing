@@ -1,3 +1,6 @@
+﻿using Bathhouse.UI;
+using Bathhouse.Data;
+using System.Collections.Generic;
 using UnityEngine;
 using Bathhouse.Data;
 using Bathhouse.Utils;
@@ -12,13 +15,13 @@ namespace Bathhouse.Managers
         [Header("Interaction Settings")]
         [SerializeField] private InteractionRewardSO _globalRewardData;
         [SerializeField] private Canvas _bubbleCanvas; // 통합 말풍선 캔버스
-        [SerializeField] private Bathhouse.UI.NPCInteractionSpeechBubbleUI _speechBubblePrefab;
+        [SerializeField] private NPCInteractionSpeechBubbleUI _speechBubblePrefab;
         [SerializeField] private Vector3 _bubbleOffset = new Vector3(0, 1.5f, 0);
         
         [Header("Global Satisfaction")]
         [SerializeField] private int _globalSatisfaction = 0;
 
-        private System.Collections.Generic.Queue<Bathhouse.UI.NPCInteractionSpeechBubbleUI> _bubblePool = new System.Collections.Generic.Queue<Bathhouse.UI.NPCInteractionSpeechBubbleUI>();
+        private Queue<NPCInteractionSpeechBubbleUI> _bubblePool = new Queue<NPCInteractionSpeechBubbleUI>();
 
         public InteractionRewardSO GlobalRewardData => _globalRewardData;
         public int GlobalSatisfaction => _globalSatisfaction;
@@ -48,7 +51,7 @@ namespace Bathhouse.Managers
             Debug.Log($"[InteractionManager] 글로벌 만족도 변경: {amount} (현재 총합: {_globalSatisfaction})");
         }
 
-        public Bathhouse.UI.NPCInteractionSpeechBubbleUI GetBubble(Transform targetTransform, System.Action onClick, Bathhouse.Data.InteractionBubbleType type = Bathhouse.Data.InteractionBubbleType.Counter)
+        public NPCInteractionSpeechBubbleUI GetBubble(Transform targetTransform, System.Action onClick, InteractionBubbleType type = InteractionBubbleType.Counter)
         {
             if (_speechBubblePrefab == null || _bubbleCanvas == null)
             {
@@ -56,7 +59,7 @@ namespace Bathhouse.Managers
                 return null;
             }
 
-            Bathhouse.UI.NPCInteractionSpeechBubbleUI bubble;
+            NPCInteractionSpeechBubbleUI bubble;
             if (_bubblePool.Count > 0)
             {
                 bubble = _bubblePool.Dequeue();
@@ -73,7 +76,7 @@ namespace Bathhouse.Managers
             return bubble;
         }
 
-        public void ReturnBubble(Bathhouse.UI.NPCInteractionSpeechBubbleUI bubble)
+        public void ReturnBubble(NPCInteractionSpeechBubbleUI bubble)
         {
             if (bubble == null) return;
             

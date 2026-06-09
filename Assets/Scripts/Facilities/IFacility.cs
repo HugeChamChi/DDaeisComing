@@ -1,4 +1,4 @@
-namespace Bathhouse.Facilities
+﻿namespace Bathhouse.Facilities
 {
     public interface IFacility
     {

@@ -1,3 +1,6 @@
+﻿using Bathhouse.UI;
+using Bathhouse.Data;
+using Bathhouse.Managers;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -14,7 +17,7 @@ namespace Bathhouse.NPC
     {
         [SerializeField] private NPC_Base _npcBase;
         
-        private Bathhouse.UI.NPCInteractionSpeechBubbleUI _speechBubbleUI;
+        private NPCInteractionSpeechBubbleUI _speechBubbleUI;
         
         private CancellationTokenSource _interactionCts;
         private float _currentTimer;
@@ -32,7 +35,7 @@ namespace Bathhouse.NPC
         /// </summary>
         public async Cysharp.Threading.Tasks.UniTaskVoid StartInteractionAsync(FacilityType currentFacility, float usageTime)
         {
-            var rewardData = Bathhouse.Managers.InteractionManager.Instance?.GlobalRewardData;
+            var rewardData = GameManager.Interaction?.GlobalRewardData;
 
             // 대상 구조물 확인: 카운터, 수건 보관함, 단상, 때밀이 등
             if (!IsInteractionTarget(currentFacility) || rewardData == null)
@@ -53,10 +56,10 @@ namespace Bathhouse.NPC
             _maxTimer = usageTime;
             _currentTimer = usageTime;
             
-            if (Bathhouse.Managers.InteractionManager.Instance != null)
+            if (GameManager.Interaction != null)
             {
-                Bathhouse.Data.InteractionBubbleType bubbleType = GetBubbleTypeFromFacility(currentFacility);
-                _speechBubbleUI = Bathhouse.Managers.InteractionManager.Instance.GetBubble(
+                InteractionBubbleType bubbleType = GetBubbleTypeFromFacility(currentFacility);
+                _speechBubbleUI = GameManager.Interaction.GetBubble(
                     transform, 
                     OnSpeechBubbleClicked, 
                     bubbleType
@@ -107,15 +110,15 @@ namespace Bathhouse.NPC
                    facility == FacilityType.DisposableDispenser;
         }
 
-        private Bathhouse.Data.InteractionBubbleType GetBubbleTypeFromFacility(FacilityType facility)
+        private InteractionBubbleType GetBubbleTypeFromFacility(FacilityType facility)
         {
             switch (facility)
             {
-                case FacilityType.Counter: return Bathhouse.Data.InteractionBubbleType.Counter;
+                case FacilityType.Counter: return InteractionBubbleType.Counter;
                 case FacilityType.TowelStorage:
-                case FacilityType.TowelReturn: return Bathhouse.Data.InteractionBubbleType.Towel;
-                case FacilityType.Platform: return Bathhouse.Data.InteractionBubbleType.Platform;
-                default: return Bathhouse.Data.InteractionBubbleType.Counter; // 기본값
+                case FacilityType.TowelReturn: return InteractionBubbleType.Towel;
+                case FacilityType.Platform: return InteractionBubbleType.Platform;
+                default: return InteractionBubbleType.Counter; // 기본값
             }
         }
 
@@ -126,7 +129,7 @@ namespace Bathhouse.NPC
         {
             if (!_isInteracting) return;
             
-            var rewardData = Bathhouse.Managers.InteractionManager.Instance?.GlobalRewardData;
+            var rewardData = GameManager.Interaction?.GlobalRewardData;
             if (rewardData == null) return;
             
             _isInteracting = false;
@@ -150,7 +153,7 @@ namespace Bathhouse.NPC
 
         private void ProcessTimeout()
         {
-            var rewardData = Bathhouse.Managers.InteractionManager.Instance?.GlobalRewardData;
+            var rewardData = GameManager.Interaction?.GlobalRewardData;
             if (rewardData == null) return;
 
             _isInteracting = false;
@@ -175,9 +178,9 @@ namespace Bathhouse.NPC
             Debug.Log($"{colorTag}[{_npcBase.Data.name}] 상호작용 완료! Phase: {phase}, 보상: {amount}</color>");
             
             // 글로벌 만족도 시스템에 보상/패널티 전달
-            if (Bathhouse.Managers.InteractionManager.Instance != null)
+            if (GameManager.Interaction != null)
             {
-                Bathhouse.Managers.InteractionManager.Instance.AddSatisfaction(amount);
+                GameManager.Interaction.AddSatisfaction(amount);
             }
             
             // NPC 자체 런타임 만족도 갱신
@@ -191,9 +194,9 @@ namespace Bathhouse.NPC
         private void EndInteraction()
         {
             _isInteracting = false;
-            if (_speechBubbleUI != null && Bathhouse.Managers.InteractionManager.Instance != null)
+            if (_speechBubbleUI != null && GameManager.Interaction != null)
             {
-                Bathhouse.Managers.InteractionManager.Instance.ReturnBubble(_speechBubbleUI);
+                GameManager.Interaction.ReturnBubble(_speechBubbleUI);
                 _speechBubbleUI = null;
             }
         }

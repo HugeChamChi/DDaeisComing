@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Bathhouse.Grid;
 using Bathhouse.Data;
 using Bathhouse.Pathfinding;
@@ -43,7 +43,7 @@ namespace Bathhouse.Managers
             MapData mapData = LoadMapData();
 
             // 1.5 FacilityManager 동적 초기화 (구조물 좌표 및 상호작용 지점 등록)
-            FacilityManager.Instance.InitializeFromMapData(mapData, nodeSize);
+            GameManager.Facility.InitializeFromMapData(mapData, nodeSize);
 
             // 2. CustomGridMap 인스턴스 생성 (World 원점을 Vector3.zero로 가정)
             _gridMap = new CustomGridMap(mapData, Vector3.zero);

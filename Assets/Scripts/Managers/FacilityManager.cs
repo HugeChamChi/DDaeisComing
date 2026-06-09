@@ -1,3 +1,4 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.Collections.Generic;
 using Bathhouse.Data;
@@ -127,7 +128,7 @@ namespace Bathhouse.Managers
         /// <summary>
         /// Returns the nearest AVAILABLE facility instance of a given type.
         /// </summary>
-        public FacilityBase GetNearestAvailableFacility(FacilityType type, Vector3 currentPos, System.Collections.Generic.HashSet<FacilityBase> ignoredFacilities = null)
+        public FacilityBase GetNearestAvailableFacility(FacilityType type, Vector3 currentPos, HashSet<FacilityBase> ignoredFacilities = null)
         {
             if (!_facilities.ContainsKey(type) || _facilities[type].Count == 0)
                 return null;
