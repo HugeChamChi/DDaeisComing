@@ -12,30 +12,34 @@ namespace Bathhouse.Test
     /// </summary>
     public class SceneTestRunner : MonoBehaviour
     {
-        [Header("Tilemap Config")]
-        public Tilemap floorTilemap;
-        public Tilemap obstacleTilemap;
-        public float nodeSize = 1f;
+        [Header("Scene Builder")]
+        public SceneFacilityBuilder facilityBuilder;
 
         [Header("Unit Spawning")]
         public NPCSpawner npcSpawner;
-        [Tooltip("NPC가 처음 스폰되는 위치 (임의 지정 가능)")]
-        public Vector2Int spawnGridPos = new Vector2Int(0, 0);
 
         private void Start()
         {
-            if (floorTilemap == null || npcSpawner == null)
+            if (facilityBuilder == null || npcSpawner == null)
             {
-                Debug.LogError("[SceneTestRunner] 필수 컴포넌트(FloorTilemap, NPCSpawner)가 설정되지 않았습니다.");
+                Debug.LogError("[SceneTestRunner] 필수 컴포넌트(SceneFacilityBuilder, NPCSpawner)가 설정되지 않았습니다.");
                 return;
             }
 
             Debug.Log("[SceneTestRunner] 씬 기반 테스트 환경 초기화 시작...");
 
-            // 1. 타일맵 기반 그리드 생성
-            IGridMap gridMap = new TilemapGridMap(floorTilemap, obstacleTilemap);
+            // 1. SceneFacilityBuilder 데이터를 MapData 형태로 변환하여 GridMap 생성
+            Bathhouse.Data.MapData mapData = new Bathhouse.Data.MapData
+            {
+                width = facilityBuilder.gridWidth,
+                height = facilityBuilder.gridHeight,
+                nodeSize = facilityBuilder.nodeSize,
+                tiles = facilityBuilder.tiles
+            };
+            
+            IGridMap gridMap = new CustomGridMap(mapData, facilityBuilder.transform.position);
 
-            // 2. 씬에 배치된 구조물들(SceneFacilityInfo)을 찾아 FacilityManager에 등록
+            // 2. 씬에 배치된 전체 구조물들(SceneFacilityInfo)을 찾아 FacilityManager에 등록
             var placedFacilities = FindObjectsOfType<SceneFacilityInfo>();
             int facilityCount = 0;
             
@@ -49,15 +53,15 @@ namespace Bathhouse.Test
                         info.facilityData, 
                         info.gridX, 
                         info.gridY, 
-                        nodeSize
+                        facilityBuilder.nodeSize
                     );
                     facilityCount++;
                 }
             }
             Debug.Log($"[SceneTestRunner] 총 {facilityCount}개의 구조물을 씬에서 찾아 등록했습니다.");
 
-            // 3. NPC 스포너 시작
-            npcSpawner.Initialize(gridMap, spawnGridPos.x, spawnGridPos.y);
+            // 3. NPC 스포너 시작 (MapConfig에 저장된 spawnGridPos 참조)
+            npcSpawner.Initialize(gridMap, facilityBuilder.mapConfig.spawnGridPos.x, facilityBuilder.mapConfig.spawnGridPos.y);
             npcSpawner.StartSpawning();
 
             Debug.Log("[SceneTestRunner] 테스트 준비 완료. NPC 스폰을 시작합니다.");

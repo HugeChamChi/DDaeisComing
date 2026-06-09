@@ -16,15 +16,68 @@ namespace Bathhouse.Tools
         [Header("Debug/Preview")]
         public bool showBoundsGizmo = true;
 
-        private Vector3 _lastVisualOffset;
+        private Vector3 _lastVisualPosOffset;
+        private Vector3 _lastVisualScaleOffset;
+        [HideInInspector] public int lastWidth = -1;
+        [HideInInspector] public int lastHeight = -1;
 
         private void Update()
         {
             if (!Application.isPlaying && facilityData != null)
             {
-                if (_lastVisualOffset != facilityData.visualOffset)
+                bool changed = false;
+
+                if (_lastVisualPosOffset != facilityData.visualPosOffset || _lastVisualScaleOffset != facilityData.visualScaleOffset)
                 {
-                    _lastVisualOffset = facilityData.visualOffset;
+                    _lastVisualPosOffset = facilityData.visualPosOffset;
+                    _lastVisualScaleOffset = facilityData.visualScaleOffset;
+                    changed = true;
+                }
+
+                if (lastWidth != facilityData.width || lastHeight != facilityData.height)
+                {
+                    SceneFacilityBuilder builder = FindObjectOfType<SceneFacilityBuilder>();
+                    if (builder != null && builder.tiles != null)
+                    {
+                        if (lastWidth > 0 && lastHeight > 0)
+                        {
+                            // 1. 기존 타일 영역 롤백 (이동 가능하게 복구)
+                            for (int i = 0; i < lastWidth; i++)
+                            {
+                                for (int j = 0; j < lastHeight; j++)
+                                {
+                                    int targetX = gridX + i;
+                                    int targetY = gridY + j;
+                                    GridTileData tile = builder.tiles.Find(t => t.x == targetX && t.y == targetY);
+                                    if (tile != null) tile.isWalkable = true;
+                                }
+                            }
+                        }
+
+                        // 2. 새로운 크기의 타일 영역 차단
+                        for (int i = 0; i < facilityData.width; i++)
+                        {
+                            for (int j = 0; j < facilityData.height; j++)
+                            {
+                                int targetX = gridX + i;
+                                int targetY = gridY + j;
+                                GridTileData tile = builder.tiles.Find(t => t.x == targetX && t.y == targetY);
+                                if (tile != null) tile.isWalkable = false;
+                                else builder.tiles.Add(new GridTileData { x = targetX, y = targetY, isWalkable = false });
+                            }
+                        }
+#if UNITY_EDITOR
+                        UnityEditor.EditorUtility.SetDirty(builder);
+#endif
+                    }
+
+                    lastWidth = facilityData.width;
+                    lastHeight = facilityData.height;
+                    changed = true;
+                }
+
+                if (changed)
+                {
                     SceneFacilityBuilder builder = FindObjectOfType<SceneFacilityBuilder>();
                     if (builder != null)
                     {
@@ -33,7 +86,8 @@ namespace Bathhouse.Tools
                             gridY * builder.nodeSize + (facilityData.height * builder.nodeSize) / 2f,
                             0f
                         );
-                        transform.position = center + facilityData.visualOffset;
+                        transform.position = center + facilityData.visualPosOffset;
+                        transform.localScale = facilityData.visualScaleOffset;
 #if UNITY_EDITOR
                         UnityEditor.EditorUtility.SetDirty(this);
 #endif

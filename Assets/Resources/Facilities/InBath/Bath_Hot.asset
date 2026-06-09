@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24432e3d967c5754c9f931fff426fdc8, type: 3}
+  m_Name: Bath_Hot
+  m_EditorClassIdentifier: 
+  facilityType: 11
+  facilityName: "\uC628\uD0D5"
+  width: 5
+  height: 5
+  interactionOffsets:
+  - {x: -1, y: 2}
+  - {x: -1, y: 0}
+  - {x: -1, y: 1}
+  maxCapacity: 5
+  baseUseTime: 2
+  usageCooldown: 0
+  cost: 100
+  cleanlinessDropPerUse: 5
+  visualPrefab: {fileID: 2783644997720154662, guid: 24556de957745314b9801d6cb7787dd9,
+    type: 3}
+  visualPosOffset: {x: 0, y: 0, z: 0}
+  visualScaleOffset: {x: 2, y: 2, z: 1}

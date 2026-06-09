@@ -4,7 +4,7 @@ using Bathhouse.Data;
 
 namespace Bathhouse.Tools
 {
-    public enum BuilderMode { Placement, Erase, SetWalkable, SetUnwalkable }
+    public enum BuilderMode { Placement, Erase, SetWalkable, SetUnwalkable, SetSpawnPos }
 
     /// <summary>
     /// 씬에서 구조물을 마우스로 클릭해 시각적으로 배치할 수 있게 해주는 빌더 클래스입니다.
@@ -70,8 +70,8 @@ namespace Bathhouse.Tools
             int targetWidth = mapConfig.gridWidth;
             int targetHeight = mapConfig.gridHeight;
 
-            // 1. 범위를 벗어난 기존 타일 제거
-            tiles.RemoveAll(t => t.x >= targetWidth || t.y >= targetHeight);
+            // 1. 범위를 벗어난 기존 타일 제거 (주석 처리하여 기존 세팅 보존)
+            // tiles.RemoveAll(t => t.x >= targetWidth || t.y >= targetHeight);
 
             // 2. 새로 확장된 영역에 타일 추가 (기존에 없는 것만)
             for (int y = 0; y < targetHeight; y++)
@@ -119,12 +119,22 @@ namespace Bathhouse.Tools
             {
                 foreach (var tile in tiles)
                 {
+                    if (tile.x >= gridWidth || tile.y >= gridHeight) continue;
+
                     Gizmos.color = tile.isWalkable ? new Color(0, 1, 0, 0.3f) : new Color(1, 0, 0, 0.3f);
                     Vector3 center = origin + new Vector3(tile.x * nodeSize + nodeSize * 0.5f, tile.y * nodeSize + nodeSize * 0.5f, 0);
                     Gizmos.DrawCube(center, new Vector3(nodeSize, nodeSize, 0.1f));
                     Gizmos.color = new Color(1, 1, 1, 0.2f);
                     Gizmos.DrawWireCube(center, new Vector3(nodeSize, nodeSize, 0.1f));
                 }
+            }
+
+            // 스폰 위치 표시
+            if (mapConfig != null)
+            {
+                Gizmos.color = new Color(0, 0, 1, 0.7f); // 파란색 반투명
+                Vector3 spawnCenter = origin + new Vector3(mapConfig.spawnGridPos.x * nodeSize + nodeSize * 0.5f, mapConfig.spawnGridPos.y * nodeSize + nodeSize * 0.5f, 0);
+                Gizmos.DrawSphere(spawnCenter, nodeSize * 0.4f);
             }
         }
     }

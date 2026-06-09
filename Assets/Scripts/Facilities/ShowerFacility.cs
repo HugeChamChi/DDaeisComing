@@ -14,8 +14,8 @@ namespace Bathhouse.Facilities
         public override void ExitFacility(NPC.NPC_Base npc, int slotIndex)
         {
             base.ExitFacility(npc, slotIndex);
-            npc.Brain.hasShowered = true;
-            npc.Brain.bathCount++;
+            // npc.Brain.hasShowered = true; (신규 라우트 시스템에서는 불필요)
+            // npc.Brain.bathCount++;
             Debug.Log($"[Shower] NPC 샤워 완료.");
         }
 

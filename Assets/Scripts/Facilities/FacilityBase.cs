@@ -12,14 +12,27 @@ namespace Bathhouse.Facilities
         [SerializeField] protected FacilityData _data;
         public FacilityData Data => _data;
 
+        public System.Collections.Generic.List<Transform> slots = new System.Collections.Generic.List<Transform>();
+
         public int GridX { get; protected set; }
         public int GridY { get; protected set; }
+        [Header("Facility State")]
+        [SerializeField] protected int _currentUsers = 0;
+        [SerializeField] protected float _currentCleanliness = 100f;
+
+        [Header("Sorting")]
+        [Tooltip("이 구조물을 이용할 때 NPC의 SpriteRenderer에 설정할 Sorting Order 값")]
+        public int npcSortingOrder = 0;
+        
+        [Header("Animation Settings")]
+        [Tooltip("상호작용 시 구조물 방향을 바라보게 할지 여부")]
+        public bool lookAtFacilityOnInteract = true;
+        [Tooltip("고유 Action_XXX 애니메이션을 재생할지 여부")]
+        public bool playSpecificActionAnimation = false;
+
         protected float _nodeSize = 1f;
 
-        protected int _currentUsers = 0;
-        protected float _currentCleanliness = 100f;
-
-        // 시설을 사용 중인 NPC들을 추적 (배열 인덱스가 곧 '자리(Slot)' 번호)
+        // 슬롯별 사용자 정보중인 NPC들을 추적 (배열 인덱스가 곧 '자리(Slot)' 번호)
         protected NPC.NPC_Base[] _occupants;
         protected float[] _slotCooldowns;
 
@@ -37,8 +50,9 @@ namespace Bathhouse.Facilities
             _currentCleanliness = 100f;
             
             // 수용 인원만큼 슬롯 배열 할당
-            _occupants = new NPC.NPC_Base[_data.maxCapacity];
-            _slotCooldowns = new float[_data.maxCapacity];
+            int capacity = slots.Count > 0 ? slots.Count : _data.maxCapacity;
+            _occupants = new NPC.NPC_Base[capacity];
+            _slotCooldowns = new float[capacity];
 
             RefreshPosition();
         }
@@ -78,8 +92,9 @@ namespace Bathhouse.Facilities
                 0f
             );
 
-            worldPos += _data.visualOffset;
+            worldPos += _data.visualPosOffset;
             transform.position = worldPos;
+            transform.localScale = _data.visualScaleOffset;
         }
 
         protected virtual void Update()
@@ -128,18 +143,15 @@ namespace Bathhouse.Facilities
 
         public virtual Vector3 GetUsageWorldPosition(int slotIndex)
         {
-            if (_data == null || _data.usageOffsets == null || _data.usageOffsets.Length == 0)
-                return transform.position;
+            if (slots != null && slots.Count > 0)
+            {
+                if (slotIndex >= 0 && slotIndex < slots.Count)
+                {
+                    return slots[slotIndex].position;
+                }
+            }
 
-            // 슬롯 인덱스에 맞춰서 사용 위치(U 마커) 매핑
-            int index = slotIndex % _data.usageOffsets.Length;
-            Vector2Int offset = _data.usageOffsets[index];
-            
-            return new Vector3(
-                (GridX + offset.x) * _nodeSize + (_nodeSize / 2f),
-                (GridY + offset.y) * _nodeSize + (_nodeSize / 2f),
-                0f
-            );
+            return transform.position;
         }
 
         /// <summary>
@@ -152,6 +164,22 @@ namespace Bathhouse.Facilities
                 _occupants[slotIndex] = npc;
             }
             _currentUsers++;
+            npc.SetSortingOrder(this.npcSortingOrder);
+
+            // 시설 상호작용 애니메이션 및 방향 처리
+            var animController = npc.GetComponent<NPC.NPCAnimationController>();
+            if (animController != null && _data != null)
+            {
+                if (lookAtFacilityOnInteract)
+                {
+                    animController.FaceTarget(transform.position);
+                }
+                
+                if (playSpecificActionAnimation)
+                {
+                    animController.PlayFacilityAction(_data.facilityType);
+                }
+            }
         }
 
         /// <summary>
@@ -171,6 +199,15 @@ namespace Bathhouse.Facilities
             _currentUsers--;
             _currentCleanliness -= _data.cleanlinessDropPerUse;
             if (_currentCleanliness < 0) _currentCleanliness = 0;
+            
+            npc.SetSortingOrder(0);
+
+            // 상호작용 애니메이션 종료
+            var animController = npc.GetComponent<NPC.NPCAnimationController>();
+            if (animController != null)
+            {
+                animController.StopFacilityAction();
+            }
         }
 
         /// <summary>
@@ -214,6 +251,24 @@ namespace Bathhouse.Facilities
                 gridPos.y * _nodeSize + (_nodeSize / 2f),
                 0f
             );
+        }
+
+        /// <summary>
+        /// 모든 상호작용 지점의 월드 좌표 목록을 반환합니다.
+        /// </summary>
+        public virtual System.Collections.Generic.List<Vector3> GetAllInteractionWorldPositions()
+        {
+            var positions = new System.Collections.Generic.List<Vector3>();
+            var gridPositions = GetInteractionGridPositions();
+            foreach (var gridPos in gridPositions)
+            {
+                positions.Add(new Vector3(
+                    gridPos.x * _nodeSize + (_nodeSize / 2f),
+                    gridPos.y * _nodeSize + (_nodeSize / 2f),
+                    0f
+                ));
+            }
+            return positions;
         }
     }
 }

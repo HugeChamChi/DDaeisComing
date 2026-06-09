@@ -16,8 +16,6 @@ namespace Bathhouse.Data
         [Tooltip("NPC가 이 시설을 이용하기 위해 실제로 서야 하는 타일의 상대 좌표 (구조물의 좌하단 기준)")]
         public Vector2Int[] interactionOffsets = new Vector2Int[] { new Vector2Int(0, -1) };
 
-        [Tooltip("NPC가 시설을 '사용 중'일 때 내부에서 실제로 머무는 자리(Slot) 상대 좌표")]
-        public Vector2Int[] usageOffsets = new Vector2Int[0];
 
         [Header("Usage Settings")]
         public int maxCapacity = 1;       // 최대 수용 인원
@@ -32,8 +30,11 @@ namespace Bathhouse.Data
         [Tooltip("실제 씬에 배치될 프리팹 (SpriteRenderer, Animator 등 포함)")]
         public GameObject visualPrefab;
 
-        [Tooltip("배치 시 미세 조정을 위한 오프셋")]
-        public Vector3 visualOffset = Vector3.zero;
+        [Tooltip("배치 시 위치 미세 조정을 위한 오프셋")]
+        public Vector3 visualPosOffset = Vector3.zero;
+
+        [Tooltip("배치 시 스케일 조정을 위한 오프셋")]
+        public Vector3 visualScaleOffset = Vector3.one;
 
         public static event System.Action<FacilityData> OnDataChanged;
 

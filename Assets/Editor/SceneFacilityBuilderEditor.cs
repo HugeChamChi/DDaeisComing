@@ -8,6 +8,8 @@ namespace Bathhouse.EditorScripts
     [CustomEditor(typeof(SceneFacilityBuilder))]
     public class SceneFacilityBuilderEditor : UnityEditor.Editor
     {
+        private UnityEditor.Editor _cachedFacilityEditor;
+
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
@@ -15,61 +17,107 @@ namespace Bathhouse.EditorScripts
             SceneFacilityBuilder builder = (SceneFacilityBuilder)target;
 
             GUILayout.Space(10);
-            GUILayout.Label("Builder Mode", EditorStyles.boldLabel);
+            GUILayout.Label("빌더 모드 (Builder Mode)", EditorStyles.boldLabel);
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Toggle(builder.currentMode == BuilderMode.Placement, "Placement", "Button"))
+            if (GUILayout.Toggle(builder.currentMode == BuilderMode.Placement, "배치 모드", "Button"))
                 builder.currentMode = BuilderMode.Placement;
-            if (GUILayout.Toggle(builder.currentMode == BuilderMode.Erase, "Erase", "Button"))
+            if (GUILayout.Toggle(builder.currentMode == BuilderMode.Erase, "지우개 모드", "Button"))
                 builder.currentMode = BuilderMode.Erase;
-            if (GUILayout.Toggle(builder.currentMode == BuilderMode.SetWalkable, "Set Walkable", "Button"))
+            if (GUILayout.Toggle(builder.currentMode == BuilderMode.SetWalkable, "길 허용", "Button"))
                 builder.currentMode = BuilderMode.SetWalkable;
-            if (GUILayout.Toggle(builder.currentMode == BuilderMode.SetUnwalkable, "Set Unwalkable", "Button"))
+            if (GUILayout.Toggle(builder.currentMode == BuilderMode.SetUnwalkable, "길 차단", "Button"))
                 builder.currentMode = BuilderMode.SetUnwalkable;
             GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Initialize Tiles"))
+            if (GUILayout.Button("타일 초기화"))
             {
                 builder.InitializeTiles();
                 EditorUtility.SetDirty(builder);
                 SceneView.RepaintAll();
             }
-            if (GUILayout.Button("Clear All Facilities"))
+            if (GUILayout.Button("모든 구조물 지우기"))
             {
                 ClearAllFacilities(builder);
+            }
+            if (GUILayout.Button("전체 구조물 프리팹/위치 재배치"))
+            {
+                ResyncAllFacilities(builder);
             }
             GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
-            GUILayout.Label("Available Facilities", EditorStyles.boldLabel);
+            GUILayout.Label("설치 가능한 구조물", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox("아래 버튼을 클릭하여 구조물을 선택한 후, 씬 뷰(Scene View)의 원하는 위치를 좌클릭하여 배치하세요.", MessageType.Info);
 
             string[] guids = AssetDatabase.FindAssets("t:FacilityData");
             if (guids.Length > 0)
             {
+                float viewWidth = EditorGUIUtility.currentViewWidth - 40f; 
+                float buttonSize = 80f;
+                int columns = Mathf.Max(1, Mathf.FloorToInt(viewWidth / buttonSize));
+                int colCount = 0;
+
                 GUILayout.BeginVertical("box");
+                GUILayout.BeginHorizontal();
                 foreach (string guid in guids)
                 {
                     string path = AssetDatabase.GUIDToAssetPath(guid);
                     FacilityData fd = AssetDatabase.LoadAssetAtPath<FacilityData>(path);
                     if (fd != null)
                     {
-                        if (GUILayout.Button(fd.name))
+                        if (colCount >= columns)
+                        {
+                            GUILayout.EndHorizontal();
+                            GUILayout.Space(5);
+                            GUILayout.BeginHorizontal();
+                            colCount = 0;
+                        }
+
+                        string displayName = string.IsNullOrEmpty(fd.facilityName) ? fd.name : fd.facilityName;
+                        Color oldColor = GUI.backgroundColor;
+                        bool isSelected = builder.selectedFacility == fd;
+                        GUI.backgroundColor = isSelected ? Color.cyan : new Color(0.9f, 0.9f, 0.9f);
+
+                        GUIStyle btnStyle = new GUIStyle(GUI.skin.button);
+                        btnStyle.fontSize = 11;
+                        btnStyle.fontStyle = FontStyle.Bold;
+                        btnStyle.wordWrap = true;
+
+                        if (GUILayout.Button(displayName, btnStyle, GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
                         {
                             builder.selectedFacility = fd;
-                            builder.currentMode = BuilderMode.Placement; // 자동으로 배치 모드로 전환
+                            builder.currentMode = BuilderMode.Placement;
                             EditorUtility.SetDirty(builder);
                             if (SceneView.lastActiveSceneView != null) SceneView.lastActiveSceneView.Focus();
                         }
+                        GUI.backgroundColor = oldColor;
+                        colCount++;
                     }
                 }
+                GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
             }
             else
             {
-                GUILayout.Label("No FacilityData found in the project.");
+                GUILayout.Label("프로젝트 내에 FacilityData를 찾을 수 없습니다.");
+            }
+
+            if (builder.selectedFacility != null)
+            {
+                GUILayout.Space(20);
+                string displayName = string.IsNullOrEmpty(builder.selectedFacility.facilityName) ? builder.selectedFacility.name : builder.selectedFacility.facilityName;
+                GUILayout.Label($"[{displayName}] 데이터 상세 설정", EditorStyles.boldLabel);
+
+                GUILayout.BeginVertical("helpbox");
+                UnityEditor.Editor.CreateCachedEditor(builder.selectedFacility, null, ref _cachedFacilityEditor);
+                if (_cachedFacilityEditor != null)
+                {
+                    _cachedFacilityEditor.OnInspectorGUI();
+                }
+                GUILayout.EndVertical();
             }
         }
 
@@ -245,7 +293,8 @@ namespace Bathhouse.EditorScripts
             } else {
                 go = new GameObject(data.facilityName);
             }
-            go.transform.position = center + data.visualOffset;
+            go.transform.position = center + data.visualPosOffset;
+            go.transform.localScale = data.visualScaleOffset;
 
             // SceneFacilityInfo 추가/수정하여 정보 저장
             SceneFacilityInfo info = go.GetComponent<SceneFacilityInfo>();
@@ -255,14 +304,20 @@ namespace Bathhouse.EditorScripts
             info.gridX = x;
             info.gridY = y;
 
-            if (builder.facilityParent != null)
+            Transform mainParent = builder.facilityParent != null ? builder.facilityParent : builder.transform;
+            string groupName = data.facilityType.ToString() + "_Parent";
+            Transform groupParent = mainParent.Find(groupName);
+
+            if (groupParent == null)
             {
-                go.transform.SetParent(builder.facilityParent);
+                GameObject groupGo = new GameObject(groupName);
+                groupParent = groupGo.transform;
+                groupParent.SetParent(mainParent);
+                groupParent.localPosition = Vector3.zero;
+                Undo.RegisterCreatedObjectUndo(groupGo, $"Create {groupName}");
             }
-            else
-            {
-                go.transform.SetParent(builder.transform);
-            }
+
+            go.transform.SetParent(groupParent);
 
             // Undo 스택에 등록하여 Ctrl+Z 지원
             Undo.RegisterCreatedObjectUndo(go, $"Place {data.facilityName}");
@@ -300,6 +355,32 @@ namespace Bathhouse.EditorScripts
                     }
                 }
             }
+        }
+
+        private void ResyncAllFacilities(SceneFacilityBuilder builder)
+        {
+            if (!EditorUtility.DisplayDialog("재배치 동기화", "씬의 모든 구조물을 지우고, 현재의 데이터와 위치에 맞게 최신 프리팹으로 다시 배치하시겠습니까?", "네, 진행합니다", "취소"))
+                return;
+
+            var placed = FindObjectsOfType<SceneFacilityInfo>();
+            var backups = new System.Collections.Generic.List<(FacilityData data, int x, int y)>();
+            
+            foreach (var info in placed)
+            {
+                if (info.facilityData != null)
+                {
+                    backups.Add((info.facilityData, info.gridX, info.gridY));
+                }
+                Undo.DestroyObjectImmediate(info.gameObject);
+            }
+
+            foreach (var backup in backups)
+            {
+                PlaceFacility(builder, backup.data, backup.x, backup.y);
+            }
+
+            EditorUtility.SetDirty(builder);
+            Debug.Log($"총 {backups.Count}개의 구조물을 최신 프리팹 데이터와 위치 오프셋을 적용하여 재배치했습니다.");
         }
     }
 }

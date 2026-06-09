@@ -17,10 +17,13 @@ namespace Bathhouse.Data
         [Header("Preference Weights")]
         [Tooltip("Weights for random facility choice after locker room.")]
         public int weightShower = 20;
-        public int weightColdBath = 10;
-        public int weightHotBath = 10;
+        public int weightBath = 10;
         public int weightSauna = 5;
         public int weightScrubArea = 5;
-        public int weightVendingMachine = 5;
+        public int weightBeverageDispenser = 5;
+
+        [Header("Satisfaction")]
+        [Tooltip("NPC의 기본 만족도 상태치. 확률적 요소 계산 시 가중치로 사용됨.")]
+        public float baseSatisfactionLevel = 0f;
     }
 }

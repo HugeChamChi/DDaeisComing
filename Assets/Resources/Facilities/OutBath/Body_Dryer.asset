@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24432e3d967c5754c9f931fff426fdc8, type: 3}
+  m_Name: Body_Dryer
+  m_EditorClassIdentifier: 
+  facilityType: 7
+  facilityName: "\uBC14\uB514 \uB4DC\uB77C\uC774\uC5B4"
+  width: 1
+  height: 1
+  interactionOffsets:
+  - {x: -1, y: 0}
+  maxCapacity: 1
+  baseUseTime: 5
+  usageCooldown: 0
+  cost: 0
+  cleanlinessDropPerUse: 5
+  visualPrefab: {fileID: 2783644997720154662, guid: 898bd45b68dd73949b63a7c3a3d78f08,
+    type: 3}
+  visualPosOffset: {x: 0, y: 0, z: 0}
+  visualScaleOffset: {x: 1, y: 1, z: 1}

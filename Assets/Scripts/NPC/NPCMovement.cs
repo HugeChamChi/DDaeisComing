@@ -14,7 +14,9 @@ namespace Bathhouse.NPC
         private int _pathIndex;
         private Action _onDestinationReached;
 
+
         public bool IsMoving { get; private set; }
+        public Vector2 CurrentDirection { get; private set; }
 
         public void Initialize(float speed)
         {
@@ -42,11 +44,20 @@ namespace Bathhouse.NPC
             _currentPath = null;
         }
 
+
         private void Update()
         {
             if (!IsMoving || _currentPath == null) return;
 
             Vector3 targetNode = _currentPath[_pathIndex];
+            
+            // 현재 이동 방향 계산
+            Vector3 moveDir = (targetNode - transform.position).normalized;
+            if (moveDir.sqrMagnitude > 0.001f)
+            {
+                CurrentDirection = new Vector2(moveDir.x, moveDir.y);
+            }
+
             transform.position = Vector3.MoveTowards(transform.position, targetNode, _speed * Time.deltaTime);
 
             if (Vector3.Distance(transform.position, targetNode) < 0.05f)

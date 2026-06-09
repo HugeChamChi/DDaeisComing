@@ -52,22 +52,19 @@ namespace Bathhouse.NPC
 
         private FacilityType ChooseBathActivity()
         {
-            int totalWeight = _data.weightShower + _data.weightColdBath + _data.weightHotBath + _data.weightSauna + _data.weightScrubArea + _data.weightVendingMachine;
+            int totalWeight = _data.weightShower + _data.weightBath + _data.weightSauna + _data.weightScrubArea + _data.weightBeverageDispenser;
             int rand = Random.Range(0, totalWeight);
 
             if (rand < _data.weightShower) return FacilityType.Shower;
             rand -= _data.weightShower;
 
-            if (rand < _data.weightColdBath) return FacilityType.ColdBath;
-            rand -= _data.weightColdBath;
-
-            if (rand < _data.weightHotBath) return FacilityType.HotBath;
-            rand -= _data.weightHotBath;
+            if (rand < _data.weightBath) return FacilityType.Bath;
+            rand -= _data.weightBath;
 
             if (rand < _data.weightSauna) return FacilityType.Sauna;
             rand -= _data.weightSauna;
 
-            if (rand < _data.weightVendingMachine) return FacilityType.VendingMachine;
+            if (rand < _data.weightBeverageDispenser) return FacilityType.BeverageDispenser;
             
             return FacilityType.ScrubArea;
         }

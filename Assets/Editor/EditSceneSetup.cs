@@ -46,8 +46,7 @@ namespace Bathhouse.EditorScripts
             // 5. SceneTestRunner 세팅
             GameObject runnerObj = new GameObject("SceneTestRunner");
             SceneTestRunner runner = runnerObj.AddComponent<SceneTestRunner>();
-            runner.floorTilemap = floorTilemap;
-            runner.obstacleTilemap = obstacleTilemap;
+            runner.facilityBuilder = builder;
             runner.npcSpawner = spawner;
 
             // 씬 저장 (Assets/Scenes 폴더가 없으면 생성)

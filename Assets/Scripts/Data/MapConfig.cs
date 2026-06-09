@@ -20,6 +20,10 @@ namespace Bathhouse.Data
         [Tooltip("한 타일의 실제 월드 크기")]
         public float nodeSize = 1f;
 
+        [Header("Spawn Settings")]
+        [Tooltip("NPC가 처음 등장하는 스폰 위치 (그리드 좌표)")]
+        public Vector2Int spawnGridPos = new Vector2Int(0, 0);
+
         public event Action OnConfigChanged;
 
 #if UNITY_EDITOR

@@ -12,21 +12,38 @@ namespace Bathhouse.NPC
     {
         [SerializeField] protected NPCData _data;
         
-        protected NPCBrain _brain;
+        protected NPCRouteController _routeController;
         protected NPCMovement _movement;
         protected PathfindingService _pathfindingService;
         
+        protected SpriteRenderer _spriteRenderer;
+
         protected FacilityType _currentDestination;
         protected Action<NPC_Base> _onExit;
         
         protected Bathhouse.Facilities.FacilityBase _targetFacility;
         private bool _isActionForcedToFinish = false;
         private bool _isActionTimerPaused = false;
+        
+        protected System.Collections.Generic.HashSet<Bathhouse.Facilities.FacilityBase> _unreachableFacilities = new System.Collections.Generic.HashSet<Bathhouse.Facilities.FacilityBase>();
 
         public Data.NPCData Data => _data;
-        public NPCBrain Brain => _brain;
+        public NPCRouteController RouteController => _routeController;
+        public NPCMovement Movement => _movement;
 
-        public virtual void Initialize(NPCData data, PathfindingService pathfinder, Action<NPC_Base> onExitCallback)
+        protected virtual void Awake()
+        {
+            _movement = GetComponent<NPCMovement>();
+            _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+            if (_spriteRenderer == null)
+            {
+                Debug.LogWarning($"[{gameObject.name}] NPC_Base: SpriteRenderer가 없습니다. 동적 정렬이 작동하지 않습니다.");
+            }
+        }
+
+
+        public virtual void Initialize(NPCData data, NPCRouteProfileSO routeProfile, PathfindingService pathfinder, Action<NPC_Base> onExitCallback)
         {
             _data = data;
             _pathfindingService = pathfinder;
@@ -35,18 +52,17 @@ namespace Bathhouse.NPC
             if (_movement == null)
                 _movement = GetComponent<NPCMovement>();
             
-            if (_brain == null)
-                _brain = new NPCBrain(_data);
+            if (_routeController == null)
+                _routeController = new NPCRouteController(routeProfile, _data);
 
             _movement.Initialize(_data.moveSpeed);
-            _brain.ResetMemory();
+            _routeController.ResetRoute();
 
             DecideNextAction();
         }
 
         protected virtual void Update()
         {
-            // 이동 중에 목표 시설이 꽉 찼는지 실시간 감시
             if (_movement != null && _movement.IsMoving && _targetFacility != null)
             {
                 if (!_targetFacility.CanEnter())
@@ -61,7 +77,15 @@ namespace Bathhouse.NPC
 
         protected virtual void DecideNextAction()
         {
-            _currentDestination = _brain.DetermineNextFacility();
+            _currentDestination = _routeController.DetermineNextFacility();
+            
+            if (_currentDestination == FacilityType.None)
+            {
+                Debug.Log($"[{Data.name}] 모든 동선을 완료했습니다. 퇴장합니다.");
+                ExitBathhouse();
+                return;
+            }
+
             Debug.Log($"[NPC_Base] {_data.name}의 다음 목표가 결정되었습니다: {_currentDestination}");
 
             MoveToTargetFacility(_currentDestination);
@@ -73,20 +97,41 @@ namespace Bathhouse.NPC
         protected virtual void MoveToTargetFacility(FacilityType type)
         {
             // 가장 가깝고 "자리가 비어있는" 시설 찾기
-            _targetFacility = FacilityManager.Instance.GetNearestAvailableFacility(type, transform.position);
+            _targetFacility = FacilityManager.Instance.GetNearestAvailableFacility(type, transform.position, _unreachableFacilities);
 
             if (_targetFacility == null)
             {
-                Debug.Log($"[{Data.name}] {type} 시설이 모두 꽉 찼습니다. 즉시 다음 행동 탐색...");
+                Debug.Log($"[{Data.name}] {type} 시설이 모두 꽉 찼거나 도달 불가능합니다. 즉시 다음 행동 탐색...");
+                _unreachableFacilities.Clear();
                 StartCoroutine(WaitAndDecide(0.1f)); // 무한 루프 방지를 위해 아주 짧은 찰나(0.1초) 대기 후 재결정
                 return;
             }
 
-            // 시설 자체가 아닌, 시설의 '상호작용 위치(O 마커)'로 길찾기 수행
-            Vector3 targetPos = _targetFacility.GetMainInteractionWorldPosition();
-            var path = _pathfindingService.FindPath(transform.position, targetPos);
+            var targetPositions = _targetFacility.GetAllInteractionWorldPositions();
+            System.Collections.Generic.List<Vector3> validPath = null;
+
+            foreach (var pos in targetPositions)
+            {
+                var path = _pathfindingService.FindPath(transform.position, pos);
+                if (path != null && path.Count > 0)
+                {
+                    validPath = path;
+                    break;
+                }
+            }
+
+            if (validPath == null)
+            {
+                Debug.Log($"[{Data.name}] {_targetFacility.Data.name}의 모든 상호작용 위치가 막혀있습니다. 다른 시설을 찾습니다.");
+                _unreachableFacilities.Add(_targetFacility);
+                _targetFacility = null;
+                MoveToTargetFacility(type);
+                return;
+            }
+
+            _unreachableFacilities.Clear();
             
-            _movement.MoveAlongPath(path, () => 
+            _movement.MoveAlongPath(validPath, () => 
             {
                 // [도착 후 최종 확인]
                 if (_targetFacility != null && _targetFacility.CanEnter())
@@ -120,6 +165,14 @@ namespace Bathhouse.NPC
             _isActionTimerPaused = isPaused;
         }
 
+        public void SetSortingOrder(int order)
+        {
+            if (_spriteRenderer != null)
+            {
+                _spriteRenderer.sortingOrder = order;
+            }
+        }
+
         protected virtual System.Collections.IEnumerator PerformActionRoutine(Bathhouse.Facilities.IFacility facility)
         {
             int slot = facility.GetAvailableSlotIndex();
@@ -143,34 +196,31 @@ namespace Bathhouse.NPC
 
             if (type == FacilityType.Counter)
             {
-                // 퇴장 시 정산 대기
+                // 카운터의 경우 대기 시간만큼 머물렀다가 진행
                 yield return new WaitForSeconds(waitTime);
-                facility.ExitFacility(this, slot);
-                ExitBathhouse();
-                yield break;
             }
-
-            // Progress 루프 (매 프레임 호출)
-            float elapsed = 0f;
-            _isActionForcedToFinish = false;
-            _isActionTimerPaused = false; // 초기화
-            
-            while (elapsed < waitTime && !_isActionForcedToFinish)
+            else
             {
-                if (!_isActionTimerPaused)
-                {
-                    elapsed += Time.deltaTime;
-                }
+                // Progress 루프 (매 프레임 호출)
+                float elapsed = 0f;
+                _isActionForcedToFinish = false;
+                _isActionTimerPaused = false; // 초기화
                 
-                facility.ProgressFacility(this, slot, Time.deltaTime);
-                yield return null;
+                while (elapsed < waitTime && !_isActionForcedToFinish)
+                {
+                    if (!_isActionTimerPaused)
+                    {
+                        elapsed += Time.deltaTime;
+                    }
+                    
+                    facility.ProgressFacility(this, slot, Time.deltaTime);
+                    yield return null;
+                }
             }
 
             facility.ExitFacility(this, slot);
 
-            // 볼일을 마치면 다시 상호작용 지점(밖)으로 나옴
-            transform.position = interactionPos;
-
+            // 다음 행동 결정
             DecideNextAction();
         }
 

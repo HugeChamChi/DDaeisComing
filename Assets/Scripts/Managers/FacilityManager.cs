@@ -110,18 +110,24 @@ namespace Bathhouse.Managers
             {
                 case FacilityType.Counter: return go.AddComponent<CounterFacility>();
                 case FacilityType.LockerRoom: return go.AddComponent<LockerRoomFacility>();
+                case FacilityType.BeverageDispenser: return go.AddComponent<BeverageDispenserFacility>();
+                case FacilityType.DisposableDispenser: return go.AddComponent<DisposableDispenserFacility>();
+                case FacilityType.TowelStorage: return go.AddComponent<TowelStorageFacility>();
+                case FacilityType.TowelReturn: return go.AddComponent<TowelReturnFacility>();
+                case FacilityType.BodyDryer: return go.AddComponent<BodyDryerFacility>();
+                case FacilityType.Platform: return go.AddComponent<PlatformFacility>();
                 case FacilityType.Shower: return go.AddComponent<ShowerFacility>();
-                case FacilityType.HotBath: return go.AddComponent<HotBathFacility>();
+                case FacilityType.Bath: return go.AddComponent<BathFacility>();
                 case FacilityType.Sauna: return go.AddComponent<SaunaFacility>();
                 case FacilityType.ScrubArea: return go.AddComponent<ScrubAreaFacility>();
-                default: return go.AddComponent<HotBathFacility>();
+                default: return go.AddComponent<BathFacility>();
             }
         }
 
         /// <summary>
         /// Returns the nearest AVAILABLE facility instance of a given type.
         /// </summary>
-        public FacilityBase GetNearestAvailableFacility(FacilityType type, Vector3 currentPos)
+        public FacilityBase GetNearestAvailableFacility(FacilityType type, Vector3 currentPos, System.Collections.Generic.HashSet<FacilityBase> ignoredFacilities = null)
         {
             if (!_facilities.ContainsKey(type) || _facilities[type].Count == 0)
                 return null;
@@ -131,6 +137,9 @@ namespace Bathhouse.Managers
 
             foreach (var fac in _facilities[type])
             {
+                // 무시 목록에 있으면 건너뜀
+                if (ignoredFacilities != null && ignoredFacilities.Contains(fac)) continue;
+
                 // 꽉 차지 않은 시설만 필터링
                 if (!fac.CanEnter()) continue;
 

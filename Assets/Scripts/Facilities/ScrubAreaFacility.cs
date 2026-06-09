@@ -101,7 +101,7 @@ namespace Bathhouse.Facilities
 
             if (_scrubCompleted.ContainsKey(npc) && _scrubCompleted[npc])
             {
-                npc.Brain.bathCount++; 
+                // npc.Brain.bathCount++; (신규 라우트 시스템에서는 불필요)
                 Debug.Log($"[ScrubArea] {npc.Data.name} 때밀이 완료! (요금 지불함)");
                 // 추후 코스트 지불 로직 추가
             }

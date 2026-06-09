@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38a67427c44819140b597a168f1a2e84, type: 3}
+  m_Name: Route Profile
+  m_EditorClassIdentifier: 
+  routeSteps:
+  - structureType: 1
+    isMandatory: 1
+    baseProbability: 1
+  - structureType: 2
+    isMandatory: 0
+    baseProbability: 1
+  - structureType: 5
+    isMandatory: 1
+    baseProbability: 1
+  - structureType: 9
+    isMandatory: 0
+    baseProbability: 0.8
+  - structureType: 11
+    isMandatory: 1
+    baseProbability: 1
+  - structureType: 12
+    isMandatory: 0
+    baseProbability: 0.5
+  - structureType: 10
+    isMandatory: 0
+    baseProbability: 0.3
+  - structureType: 6
+    isMandatory: 1
+    baseProbability: 1
+  - structureType: 7
+    isMandatory: 1
+    baseProbability: 1
+  satisfactionInteractions:
+  - interactionType: 0
+    totalTimeLimit: 10
+    satisfactionScores: 0a00000005000000fbfffffff6ffffff
+  - interactionType: 1
+    totalTimeLimit: 10
+    satisfactionScores: 0a00000005000000fbfffffff6ffffff
+  - interactionType: 2
+    totalTimeLimit: 10
+    satisfactionScores: 0a00000005000000fbfffffff6ffffff
+  - interactionType: 3
+    totalTimeLimit: 10
+    satisfactionScores: 0a00000005000000fbfffffff6ffffff

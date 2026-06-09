@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bb2575cb13b4c149ac56f4bf6352b51, type: 3}
   m_Name: MapConfig
   m_EditorClassIdentifier: 
-  gridWidth: 40
-  gridHeight: 20
+  gridWidth: 37
+  gridHeight: 15
   nodeSize: 1
+  spawnGridPos: {x: 1, y: 14}

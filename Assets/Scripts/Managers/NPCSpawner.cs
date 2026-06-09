@@ -15,6 +15,7 @@ namespace Bathhouse.Managers
     {
         [SerializeField] private NPC_Base npcPrefab;
         [SerializeField] private NPCData defaultNpcData;
+        [SerializeField] private NPCRouteProfileSO defaultRouteProfile;
         [SerializeField] private float spawnInterval = 5f;
 
         private Vector3 _spawnPosition;
@@ -47,8 +48,8 @@ namespace Bathhouse.Managers
                 {
                     npc.transform.position = _spawnPosition;
                     npc.gameObject.SetActive(true);
-                    // Injecting pathfinder
-                    npc.Initialize(defaultNpcData, _pathfindingService, OnNpcExit);
+                    // Injecting route profile and pathfinder
+                    npc.Initialize(defaultNpcData, defaultRouteProfile, _pathfindingService, OnNpcExit);
                 },
                 actionOnRelease: (npc) => npc.gameObject.SetActive(false),
                 actionOnDestroy: (npc) => Destroy(npc.gameObject),

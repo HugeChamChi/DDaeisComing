@@ -14,7 +14,7 @@ namespace Bathhouse.Facilities
         public override void ExitFacility(NPC.NPC_Base npc, int slotIndex)
         {
             base.ExitFacility(npc, slotIndex);
-            npc.Brain.bathCount++;
+            // npc.Brain.bathCount++; (신규 라우트 시스템에서는 불필요)
             Debug.Log($"[Sauna] NPC가 사우나 이용을 마쳤습니다.");
         }
     }
