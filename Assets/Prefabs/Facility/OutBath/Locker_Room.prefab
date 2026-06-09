@@ -85,7 +85,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
-  m_SpriteSortPoint: 0
+  m_SpriteSortPoint: 1
 --- !u!114 &7187091835997459025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101,6 +101,11 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: 18e2ffd8efe626f41a4f34c279827213, type: 2}
   slots:
   - {fileID: 8932855089986077653}
+  _currentUsers: 0
+  _currentCleanliness: 100
+  teleportToSlotOnUse: 0
+  lookAtFacilityOnInteract: 1
+  playSpecificActionAnimation: 0
   spriteRenderer: {fileID: 3871541711145572399}
   openSprite: {fileID: 21300000, guid: 07b0ffb0dbd6db24bbc037dca333dd43, type: 3}
   closeSprite: {fileID: 21300000, guid: 1ae4d1e0639fd284b9bc5f042269ea3e, type: 3}

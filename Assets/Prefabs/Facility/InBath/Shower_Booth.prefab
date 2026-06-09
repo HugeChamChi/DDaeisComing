@@ -73,7 +73,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 991944485
-  m_SortingLayer: 1
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 111e6ecfa96564c4c8d9ef5165fdb54d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
-  m_SpriteSortPoint: 0
+  m_SpriteSortPoint: 1
 --- !u!114 &9174825311639115500
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -101,6 +101,11 @@ MonoBehaviour:
   _data: {fileID: 11400000, guid: 28f41e462d6dac946bd3de1cd7d96da3, type: 2}
   slots:
   - {fileID: 9168592679656916395}
+  _currentUsers: 0
+  _currentCleanliness: 100
+  teleportToSlotOnUse: 0
+  lookAtFacilityOnInteract: 1
+  playSpecificActionAnimation: 0
 --- !u!1 &5851236399173897032
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,30 +16,39 @@ MonoBehaviour:
   - structureType: 1
     isMandatory: 1
     baseProbability: 1
-  - structureType: 2
+  - structureType: 4
     isMandatory: 0
+    baseProbability: 0.5
+  - structureType: 2
+    isMandatory: 1
     baseProbability: 1
   - structureType: 5
     isMandatory: 1
     baseProbability: 1
   - structureType: 9
     isMandatory: 0
-    baseProbability: 0.8
+    baseProbability: 0.5
   - structureType: 11
-    isMandatory: 1
-    baseProbability: 1
+    isMandatory: 0
+    baseProbability: 0.5
   - structureType: 12
     isMandatory: 0
     baseProbability: 0.5
   - structureType: 10
     isMandatory: 0
-    baseProbability: 0.3
+    baseProbability: 0.5
   - structureType: 6
     isMandatory: 1
     baseProbability: 1
   - structureType: 7
     isMandatory: 1
     baseProbability: 1
+  - structureType: 3
+    isMandatory: 0
+    baseProbability: 0.5
+  - structureType: 8
+    isMandatory: 0
+    baseProbability: 0.5
   satisfactionInteractions:
   - interactionType: 0
     totalTimeLimit: 10

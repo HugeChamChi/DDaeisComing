@@ -2,8 +2,9 @@ using UnityEngine;
 using Bathhouse.Data;
 using Bathhouse.Pathfinding;
 using Bathhouse.Managers;
-using System.Collections;
 using System;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 
 namespace Bathhouse.NPC
 {
@@ -20,6 +21,7 @@ namespace Bathhouse.NPC
 
         protected FacilityType _currentDestination;
         protected Action<NPC_Base> _onExit;
+        protected NPCInteractionController _interactionController;
         
         protected Bathhouse.Facilities.FacilityBase _targetFacility;
         private bool _isActionForcedToFinish = false;
@@ -30,11 +32,15 @@ namespace Bathhouse.NPC
         public Data.NPCData Data => _data;
         public NPCRouteController RouteController => _routeController;
         public NPCMovement Movement => _movement;
+        
+        // NPC 개별 런타임 만족도 (ScriptableObject 데이터와 분리)
+        public float CurrentSatisfaction { get; private set; }
 
         protected virtual void Awake()
         {
             _movement = GetComponent<NPCMovement>();
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            _interactionController = GetComponent<NPCInteractionController>();
 
             if (_spriteRenderer == null)
             {
@@ -52,8 +58,11 @@ namespace Bathhouse.NPC
             if (_movement == null)
                 _movement = GetComponent<NPCMovement>();
             
+            // 데이터의 기본 만족도로 런타임 만족도 초기화
+            CurrentSatisfaction = _data != null ? _data.baseSatisfactionLevel : 0f;
+            
             if (_routeController == null)
-                _routeController = new NPCRouteController(routeProfile, _data);
+                _routeController = new NPCRouteController(routeProfile, this);
 
             _movement.Initialize(_data.moveSpeed);
             _routeController.ResetRoute();
@@ -63,16 +72,9 @@ namespace Bathhouse.NPC
 
         protected virtual void Update()
         {
-            if (_movement != null && _movement.IsMoving && _targetFacility != null)
-            {
-                if (!_targetFacility.CanEnter())
-                {
-                    Debug.Log($"[{Data.name}] 이동 중에 {_currentDestination} 자리가 찼음! 다른 곳으로 재탐색...");
-                    _movement.StopMoving();
-                    _targetFacility = null;
-                    MoveToTargetFacility(_currentDestination);
-                }
-            }
+            // [수정됨] 예약 시스템(Reservation)이 도입되었으므로, 이동 중에 자리가 뺏겼는지 매 프레임 검사할 필요가 없습니다.
+            // 오히려 자신이 마지막 남은 자리를 예약해버리면 CanEnter()가 false가 되어 
+            // 자기 스스로 이동을 취소해버리는 버그가 발생하므로 기존 검사 로직을 제거했습니다.
         }
 
         protected virtual void DecideNextAction()
@@ -91,6 +93,8 @@ namespace Bathhouse.NPC
             MoveToTargetFacility(_currentDestination);
         }
 
+        protected int _reservedSlot = -1;
+
         /// <summary>
         /// 특정 타입의 시설 중 이용 가능한 곳을 찾아 이동합니다.
         /// </summary>
@@ -103,7 +107,16 @@ namespace Bathhouse.NPC
             {
                 Debug.Log($"[{Data.name}] {type} 시설이 모두 꽉 찼거나 도달 불가능합니다. 즉시 다음 행동 탐색...");
                 _unreachableFacilities.Clear();
-                StartCoroutine(WaitAndDecide(0.1f)); // 무한 루프 방지를 위해 아주 짧은 찰나(0.1초) 대기 후 재결정
+                WaitAndDecideAsync(0.1f, this.GetCancellationTokenOnDestroy()).Forget(); // 무한 루프 방지를 위해 아주 짧은 찰나(0.1초) 대기 후 재결정
+                return;
+            }
+
+            // [중요: 동선 선점] 출발하기 전에 미리 자리를 예약(찜)합니다.
+            if (!_targetFacility.ReserveSlot(this, out _reservedSlot))
+            {
+                // 그 찰나에 다른 NPC가 찜했다면 다시 탐색
+                _targetFacility = null;
+                MoveToTargetFacility(type);
                 return;
             }
 
@@ -122,7 +135,8 @@ namespace Bathhouse.NPC
 
             if (validPath == null)
             {
-                Debug.Log($"[{Data.name}] {_targetFacility.Data.name}의 모든 상호작용 위치가 막혀있습니다. 다른 시설을 찾습니다.");
+                Debug.Log($"[{Data.name}] {_targetFacility.Data.name}의 모든 상호작용 위치가 막혀있습니다. 예약을 취소하고 다른 시설을 찾습니다.");
+                _targetFacility.CancelReservation(this); // 예약 취소
                 _unreachableFacilities.Add(_targetFacility);
                 _targetFacility = null;
                 MoveToTargetFacility(type);
@@ -134,30 +148,30 @@ namespace Bathhouse.NPC
             _movement.MoveAlongPath(validPath, () => 
             {
                 // [도착 후 최종 확인]
-                if (_targetFacility != null && _targetFacility.CanEnter())
+                // 이미 예약을 걸어두었으므로, 도중에 다른 NPC에게 뺏기지 않음
+                if (_targetFacility != null)
                 {
                     var facilityToEnter = _targetFacility;
                     _targetFacility = null; 
-                    StartCoroutine(PerformActionRoutine(facilityToEnter));
-                }
-                else
-                {
-                    Debug.Log($"[{Data.name}] 도착했으나 그 사이 {type} 자리가 찼음! 다시 재탐색...");
-                    _targetFacility = null;
-                    MoveToTargetFacility(type);
+                    PerformActionRoutineAsync(facilityToEnter, _reservedSlot, this.GetCancellationTokenOnDestroy()).Forget();
                 }
             });
         }
 
-        private System.Collections.IEnumerator WaitAndDecide(float delay)
+        private async UniTaskVoid WaitAndDecideAsync(float delay, CancellationToken token)
         {
-            yield return new WaitForSeconds(delay);
+            await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: token);
             DecideNextAction();
         }
 
         public void ForceFinishCurrentAction()
         {
             _isActionForcedToFinish = true;
+        }
+
+        public void AddSatisfaction(float amount)
+        {
+            CurrentSatisfaction = Mathf.Clamp01(CurrentSatisfaction + amount);
         }
 
         public void SetActionTimerPaused(bool isPaused)
@@ -167,58 +181,82 @@ namespace Bathhouse.NPC
 
         public void SetSortingOrder(int order)
         {
-            if (_spriteRenderer != null)
+            var depthSorter = GetComponentInChildren<Bathhouse.Tools.DynamicDepthSorter>();
+            if (depthSorter != null)
+            {
+                depthSorter.ForceSetOrder(order);
+            }
+            else if (_spriteRenderer != null)
             {
                 _spriteRenderer.sortingOrder = order;
             }
         }
 
-        protected virtual System.Collections.IEnumerator PerformActionRoutine(Bathhouse.Facilities.IFacility facility)
+        protected virtual async UniTaskVoid PerformActionRoutineAsync(Bathhouse.Facilities.IFacility facility, int slot, CancellationToken token)
         {
-            int slot = facility.GetAvailableSlotIndex();
             if (slot == -1) 
             {
                 // 혹시나 찰나의 순간에 꽉 찼다면 다시 탐색
                 MoveToTargetFacility(_currentDestination);
-                yield break;
+                return;
             }
 
             facility.EnterFacility(this, slot);
             float waitTime = facility.GetUsageTime();
             Data.FacilityType type = facility.GetFacilityType();
 
+            // 상호작용 UI(말풍선) 시작 (비동기 병렬 실행)
+            if (_interactionController != null)
+            {
+                _interactionController.StartInteractionAsync(type, waitTime);
+            }
+
             // 상호작용 지점(O 마커) 저장
             Vector3 interactionPos = transform.position;
+            var depthSorter = GetComponentInChildren<Bathhouse.Tools.DynamicDepthSorter>();
 
-            // 머무는 자리(U 마커)로 이동 (구조물 내부)
-            Vector3 usagePos = facility.GetUsageWorldPosition(slot);
-            transform.position = usagePos;
-
-            if (type == FacilityType.Counter)
+            if (facility.TeleportToSlotOnUse)
             {
-                // 카운터의 경우 대기 시간만큼 머물렀다가 진행
-                yield return new WaitForSeconds(waitTime);
+                // 머무는 자리(U 마커)로 이동 (구조물 내부)
+                Vector3 usagePos = facility.GetUsageWorldPosition(slot);
+                transform.position = usagePos;
+
+                // NPC가 구조물 내부로 들어갔으므로, 구조물 바로 위(앞)에 그려지도록 정렬 강제 세팅
+                if (depthSorter != null) depthSorter.IsPaused = true;
+                SetSortingOrder(facility.GetSortingOrder() + 1);
             }
-            else
+
+            // Progress 루프 (매 프레임 호출)
+            float elapsed = 0f;
+            _isActionForcedToFinish = false;
+            _isActionTimerPaused = false; // 초기화
+            
+            while (elapsed < waitTime && !_isActionForcedToFinish)
             {
-                // Progress 루프 (매 프레임 호출)
-                float elapsed = 0f;
-                _isActionForcedToFinish = false;
-                _isActionTimerPaused = false; // 초기화
-                
-                while (elapsed < waitTime && !_isActionForcedToFinish)
+                token.ThrowIfCancellationRequested();
+
+                if (!_isActionTimerPaused)
                 {
-                    if (!_isActionTimerPaused)
-                    {
-                        elapsed += Time.deltaTime;
-                    }
-                    
-                    facility.ProgressFacility(this, slot, Time.deltaTime);
-                    yield return null;
+                    elapsed += Time.deltaTime;
                 }
+                
+                if (type != FacilityType.Counter)
+                {
+                    facility.ProgressFacility(this, slot, Time.deltaTime);
+                }
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
 
             facility.ExitFacility(this, slot);
+
+            if (facility.TeleportToSlotOnUse)
+            {
+                // 사용이 끝나면 구조물 내부(Slot)에서 다시 상호작용 노드 위치(밖)로 텔레포트 복귀
+                transform.position = interactionPos;
+                
+                // 동적 정렬 다시 켜기
+                if (depthSorter != null) depthSorter.IsPaused = false;
+            }
 
             // 다음 행동 결정
             DecideNextAction();
@@ -227,6 +265,14 @@ namespace Bathhouse.NPC
         protected virtual void ExitBathhouse()
         {
             _onExit?.Invoke(this);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (_targetFacility != null)
+            {
+                _targetFacility.CancelReservation(this);
+            }
         }
     }
 }

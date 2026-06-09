@@ -20,11 +20,11 @@ namespace Bathhouse.Facilities
         [SerializeField] protected int _currentUsers = 0;
         [SerializeField] protected float _currentCleanliness = 100f;
 
-        [Header("Sorting")]
-        [Tooltip("이 구조물을 이용할 때 NPC의 SpriteRenderer에 설정할 Sorting Order 값")]
-        public int npcSortingOrder = 0;
-        
         [Header("Animation Settings")]
+        [Tooltip("상호작용 시 구조물 내부의 Slot 위치로 텔레포트할지 여부 (꺼두면 상호작용 위치에서 그대로 이용)")]
+        public bool teleportToSlotOnUse = true;
+        public bool TeleportToSlotOnUse => teleportToSlotOnUse;
+
         [Tooltip("상호작용 시 구조물 방향을 바라보게 할지 여부")]
         public bool lookAtFacilityOnInteract = true;
         [Tooltip("고유 Action_XXX 애니메이션을 재생할지 여부")]
@@ -34,6 +34,7 @@ namespace Bathhouse.Facilities
 
         // 슬롯별 사용자 정보중인 NPC들을 추적 (배열 인덱스가 곧 '자리(Slot)' 번호)
         protected NPC.NPC_Base[] _occupants;
+        protected NPC.NPC_Base[] _reservers; // 미리 자리를 찜해둔 NPC
         protected float[] _slotCooldowns;
 
         /// <summary>
@@ -52,6 +53,7 @@ namespace Bathhouse.Facilities
             // 수용 인원만큼 슬롯 배열 할당
             int capacity = slots.Count > 0 ? slots.Count : _data.maxCapacity;
             _occupants = new NPC.NPC_Base[capacity];
+            _reservers = new NPC.NPC_Base[capacity];
             _slotCooldowns = new float[capacity];
 
             RefreshPosition();
@@ -119,16 +121,39 @@ namespace Bathhouse.Facilities
         }
 
         /// <summary>
-        /// 비어있는 자리(Slot Index)를 찾아서 반환합니다. (사람이 없고 쿨타임도 끝난 자리)
+        /// 비어있는 자리(Slot Index)를 찾아서 반환합니다. (사람도 없고, 쿨타임도 끝났고, 예약자도 없는 자리)
         /// </summary>
         public virtual int GetAvailableSlotIndex()
         {
             if (_occupants == null || _slotCooldowns == null) return -1;
             for (int i = 0; i < _occupants.Length; i++)
             {
-                if (_occupants[i] == null && _slotCooldowns[i] <= 0) return i;
+                if (_occupants[i] == null && _slotCooldowns[i] <= 0 && _reservers[i] == null) return i;
             }
             return -1;
+        }
+
+        public virtual bool ReserveSlot(NPC.NPC_Base npc, out int slotIndex)
+        {
+            slotIndex = GetAvailableSlotIndex();
+            if (slotIndex != -1)
+            {
+                _reservers[slotIndex] = npc;
+                return true;
+            }
+            return false;
+        }
+
+        public virtual void CancelReservation(NPC.NPC_Base npc)
+        {
+            if (_reservers == null) return;
+            for (int i = 0; i < _reservers.Length; i++)
+            {
+                if (_reservers[i] == npc)
+                {
+                    _reservers[i] = null;
+                }
+            }
         }
 
         public virtual float GetUsageTime()
@@ -162,9 +187,13 @@ namespace Bathhouse.Facilities
             if (slotIndex >= 0 && slotIndex < _occupants.Length)
             {
                 _occupants[slotIndex] = npc;
+                // 예약 해제 후 점유로 전환
+                if (_reservers != null && _reservers[slotIndex] == npc)
+                {
+                    _reservers[slotIndex] = null;
+                }
             }
             _currentUsers++;
-            npc.SetSortingOrder(this.npcSortingOrder);
 
             // 시설 상호작용 애니메이션 및 방향 처리
             var animController = npc.GetComponent<NPC.NPCAnimationController>();
@@ -199,8 +228,6 @@ namespace Bathhouse.Facilities
             _currentUsers--;
             _currentCleanliness -= _data.cleanlinessDropPerUse;
             if (_currentCleanliness < 0) _currentCleanliness = 0;
-            
-            npc.SetSortingOrder(0);
 
             // 상호작용 애니메이션 종료
             var animController = npc.GetComponent<NPC.NPCAnimationController>();
@@ -269,6 +296,31 @@ namespace Bathhouse.Facilities
                 ));
             }
             return positions;
+        }
+
+        public virtual int GetSortingOrder()
+        {
+            var sg = GetComponent<UnityEngine.Rendering.SortingGroup>();
+            if (sg != null) return sg.sortingOrder;
+
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr != null) return sr.sortingOrder;
+
+            var childRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+            if (childRenderers != null && childRenderers.Length > 0)
+            {
+                int maxOrder = int.MinValue;
+                foreach (var r in childRenderers)
+                {
+                    if (r.sortingOrder > maxOrder)
+                    {
+                        maxOrder = r.sortingOrder;
+                    }
+                }
+                return maxOrder;
+            }
+
+            return 0;
         }
     }
 }

@@ -9,10 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3bb2575cb13b4c149ac56f4bf6352b51, type: 3}
-  m_Name: MapConfig
+  m_Script: {fileID: 11500000, guid: 3099f84f90e8dfe42933f54b2c628f62, type: 3}
+  m_Name: Counter Breath Animation
   m_EditorClassIdentifier: 
-  gridWidth: 74
-  gridHeight: 35
-  nodeSize: 0.5
-  spawnGridPos: {x: 3, y: 29}
+  duration: 1
+  easeType: 4
+  scaleMultiplier: {x: 1.05, y: 0.95}

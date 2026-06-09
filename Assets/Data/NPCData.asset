@@ -16,7 +16,10 @@ MonoBehaviour:
   showerTime: 3
   bathTime: 5
   scrubTime: 4
-  weightColdBath: 10
-  weightHotBath: 10
+  weightShower: 20
+  weightBath: 10
   weightSauna: 5
   weightScrubArea: 5
+  weightBeverageDispenser: 5
+  baseSatisfactionLevel: 1
+  satisfactionProbabilityWeight: 0.5

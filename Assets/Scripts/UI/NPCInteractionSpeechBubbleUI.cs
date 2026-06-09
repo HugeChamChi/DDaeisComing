@@ -15,12 +15,15 @@ namespace Bathhouse.UI
         [Header("References")]
         [SerializeField] private Image _fillImage; // 남은 시간을 시각적으로 보여줄 이미지 (Image Type: Filled 권장)
         [SerializeField] private CanvasGroup _canvasGroup; // 알파값 페이드 효과용
+        [SerializeField] private Image _iconImage; // 말풍선 중앙에 표시될 아이콘
         
         [Header("Animation Settings")]
         [SerializeField] private float _clickAnimationDuration = 0.2f;
         [SerializeField] private Vector3 _clickScale = new Vector3(0.85f, 0.85f, 1f);
 
-        private NPCInteractionController _controller;
+        private System.Action _onClickCallback;
+        private Transform _targetTransform;
+        private Vector3 _offset;
         private Vector3 _originalScale;
         private bool _isInteractable = false;
 
@@ -32,11 +35,27 @@ namespace Bathhouse.UI
         }
 
         /// <summary>
-        /// 초기 설정. 컨트롤러 연결.
+        /// 초기 설정. 콜백과 추적할 대상 연결.
         /// </summary>
-        public void Init(NPCInteractionController controller)
+        public void Init(Transform targetTransform, Vector3 offset, System.Action onClick, Sprite icon)
         {
-            _controller = controller;
+            _targetTransform = targetTransform;
+            _offset = offset;
+            _onClickCallback = onClick;
+            
+            if (_iconImage != null)
+            {
+                if (icon != null)
+                {
+                    _iconImage.sprite = icon;
+                    _iconImage.gameObject.SetActive(true);
+                }
+                else
+                {
+                    _iconImage.gameObject.SetActive(false);
+                }
+            }
+            
             Hide();
         }
 
@@ -68,6 +87,26 @@ namespace Bathhouse.UI
             gameObject.SetActive(false);
         }
 
+        private void LateUpdate()
+        {
+            if (_targetTransform != null)
+            {
+                Canvas canvas = GetComponentInParent<Canvas>();
+                if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                {
+                    if (Camera.main != null)
+                    {
+                        Vector3 screenPos = Camera.main.WorldToScreenPoint(_targetTransform.position + _offset);
+                        transform.position = screenPos;
+                    }
+                }
+                else
+                {
+                    transform.position = _targetTransform.position + _offset;
+                }
+            }
+        }
+
         /// <summary>
         /// 남은 시간 비율에 따라 UI 업데이트 (컨트롤러에서 호출)
         /// </summary>
@@ -89,10 +128,10 @@ namespace Bathhouse.UI
             // 중복 클릭 방지
             _isInteractable = false;
 
-            // 컨트롤러에 클릭 이벤트 전달
-            _controller?.OnSpeechBubbleClicked();
+            // 연결된 콜백 실행
+            _onClickCallback?.Invoke();
 
-            // 클릭 피드백 애니메이션 재생 후 숨기기
+            // 클릭 피드백 애니메이션 재생 후 숨기기 및 매니저 반환
             StartCoroutine(PlayClickFeedbackRoutine());
         }
 
@@ -136,8 +175,15 @@ namespace Bathhouse.UI
                 yield return null;
             }
 
-            // 애니메이션 종료 후 비활성화
-            Hide();
+            // 애니메이션 종료 후 풀로 반환
+            if (Bathhouse.Managers.InteractionManager.Instance != null)
+            {
+                Bathhouse.Managers.InteractionManager.Instance.ReturnBubble(this);
+            }
+            else
+            {
+                Hide();
+            }
         }
     }
 }

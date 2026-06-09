@@ -14,11 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   facilityType: 9
   facilityName: "\uC0E4\uC6CC\uC2E4"
-  width: 1
-  height: 1
+  width: 5
+  height: 4
   interactionOffsets:
-  - {x: 0, y: -1}
-  - {x: 1, y: -1}
+  - {x: 2, y: -1}
   maxCapacity: 1
   baseUseTime: 5
   usageCooldown: 0
@@ -26,5 +25,5 @@ MonoBehaviour:
   cleanlinessDropPerUse: 5
   visualPrefab: {fileID: 2783644997720154662, guid: 845872ad3cb2ab14280945d22c6f0d06,
     type: 3}
-  visualPosOffset: {x: 0, y: 0, z: 0}
-  visualScaleOffset: {x: 1, y: 1, z: 1}
+  visualPosOffset: {x: 0, y: 1, z: 0}
+  visualScaleOffset: {x: 2, y: 2, z: 1}

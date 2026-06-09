@@ -11,14 +11,14 @@ namespace Bathhouse.NPC
     public class NPCRouteController
     {
         private readonly NPCRouteProfileSO _routeProfile;
-        private readonly NPCData _npcData;
+        private readonly NPC_Base _npcBase;
         private int _currentStepIndex = 0;
 
         // [Inject] VContainer를 사용한다면 생성자 주입 활용
-        public NPCRouteController(NPCRouteProfileSO routeProfile, NPCData npcData)
+        public NPCRouteController(NPCRouteProfileSO routeProfile, NPC_Base npcBase)
         {
             _routeProfile = routeProfile;
-            _npcData = npcData;
+            _npcBase = npcBase;
             _currentStepIndex = 0;
         }
 
@@ -47,15 +47,18 @@ namespace Bathhouse.NPC
                 }
                 else
                 {
-                    // 선택 동선 판단 (기본 확률 + NPC 만족도 보정치)
-                    // baseSatisfactionLevel이 0~1이라고 가정하고, 보정치를 계산합니다.
-                    float satisfactionBonus = _npcData.baseSatisfactionLevel * 0.5f; // 임의 가중치 비율
+                    float satisfactionBonus = _npcBase.CurrentSatisfaction * _npcBase.Data.satisfactionProbabilityWeight; 
                     float finalProbability = step.baseProbability + satisfactionBonus;
                     float diceRoll = Random.Range(0f, 1f);
 
                     if (diceRoll <= finalProbability)
                     {
+                        Debug.Log($"<color=#00FFFF>[동선 확률]</color> {_npcBase.Data.name} - {finalProbability * 100f:F1}% 확률로 <b>{step.structureType}</b> 이용 결정! (주사위 결과: {diceRoll * 100f:F1}%)");
                         return step.structureType;
+                    }
+                    else
+                    {
+                        Debug.Log($"<color=#FFA500>[동선 확률]</color> {_npcBase.Data.name} - {finalProbability * 100f:F1}% 확률이었으나 <b>{step.structureType}</b> 패스함. 다음 동선 탐색... (주사위 결과: {diceRoll * 100f:F1}%)");
                     }
                     // 실패 시 건너뛰고 다음 Step 평가
                 }

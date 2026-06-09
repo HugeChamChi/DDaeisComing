@@ -12,5 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c4220f688760d84bb799e51d788f4b9, type: 3}
   m_Name: Interaction Reward
   m_EditorClassIdentifier: 
-  timeLimit: 4
   rewardTiers: 0a00000005000000fbfffffff6ffffff
+  iconMappings:
+  - type: 0
+    icon: {fileID: 21300000, guid: e4c9d87aaeeb1594db93e1034e8db01d, type: 3}
+  - type: 1
+    icon: {fileID: 21300000, guid: 27131296a75ef644187894ada8bcc325, type: 3}
+  - type: 2
+    icon: {fileID: 21300000, guid: 4800f3b6ecaea2243bc8106cd117a119, type: 3}

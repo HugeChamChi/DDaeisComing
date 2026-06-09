@@ -41,12 +41,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Object
+    uniqueID: 991944485
+    locked: 0
   - name: Wall
     uniqueID: 333712829
     locked: 0
-  - name: Facility
-    uniqueID: 991944485
-    locked: 0
-  - name: NPC
-    uniqueID: 2154324763
+  - name: FX
+    uniqueID: 3459971575
     locked: 0

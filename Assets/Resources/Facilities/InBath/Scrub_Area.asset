@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   facilityType: 10
   facilityName: "\uB54C\uBC00\uC774 \uACF5\uAC04"
-  width: 5
-  height: 3
+  width: 10
+  height: 6
   interactionOffsets:
   - {x: 4, y: -1}
   maxCapacity: 1

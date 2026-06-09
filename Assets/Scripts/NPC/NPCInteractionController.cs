@@ -12,55 +12,58 @@ namespace Bathhouse.NPC
     /// </summary>
     public class NPCInteractionController : MonoBehaviour
     {
-        [SerializeField] private InteractionRewardSO _rewardData;
         [SerializeField] private NPC_Base _npcBase;
         
-        [Header("UI Reference")]
-        [SerializeField] private Bathhouse.UI.NPCInteractionSpeechBubbleUI _speechBubbleUI;
+        private Bathhouse.UI.NPCInteractionSpeechBubbleUI _speechBubbleUI;
         
         private CancellationTokenSource _interactionCts;
         private float _currentTimer;
+        private float _maxTimer;
         private bool _isInteracting;
-
-        // DI를 통해 주입받을 수 있는 Global Satisfaction System 이벤트나 참조가 있다고 가정
-        // [Inject] private IGlobalSatisfactionSystem _satisfactionSystem;
 
         private void Awake()
         {
             if (_npcBase == null)
                 _npcBase = GetComponent<NPC_Base>();
-                
-            if (_speechBubbleUI != null)
-                _speechBubbleUI.Init(this);
-                
-            SetBubbleActive(false);
-        }
-
-        public void SetRewardData(InteractionRewardSO rewardData)
-        {
-            _rewardData = rewardData;
         }
 
         /// <summary>
         /// 특정 시설 이용 시 상호작용 시작
         /// </summary>
-        public async System.Threading.Tasks.Task StartInteractionAsync(FacilityType currentFacility)
+        public async Cysharp.Threading.Tasks.UniTaskVoid StartInteractionAsync(FacilityType currentFacility, float usageTime)
         {
+            var rewardData = Bathhouse.Managers.InteractionManager.Instance?.GlobalRewardData;
+
             // 대상 구조물 확인: 카운터, 수건 보관함, 단상, 때밀이 등
-            if (!IsInteractionTarget(currentFacility) || _rewardData == null)
+            if (!IsInteractionTarget(currentFacility) || rewardData == null)
             {
                 return;
+            }
+
+            // 이전 상호작용이 아직 덜 끝났다면 강제 종료하여 말풍선을 먼저 반환
+            if (_isInteracting)
+            {
+                EndInteraction();
             }
 
             _interactionCts?.Cancel();
             _interactionCts = new CancellationTokenSource();
 
             _isInteracting = true;
-            _currentTimer = _rewardData.timeLimit;
+            _maxTimer = usageTime;
+            _currentTimer = usageTime;
             
-            SetBubbleActive(true);
+            if (Bathhouse.Managers.InteractionManager.Instance != null)
+            {
+                Bathhouse.Data.InteractionBubbleType bubbleType = GetBubbleTypeFromFacility(currentFacility);
+                _speechBubbleUI = Bathhouse.Managers.InteractionManager.Instance.GetBubble(
+                    transform, 
+                    OnSpeechBubbleClicked, 
+                    bubbleType
+                );
+            }
             
-            Debug.Log($"[{_npcBase.Data.name}] 말풍선 상호작용 시작! ({_rewardData.timeLimit}초)");
+            Debug.Log($"[{_npcBase.Data.name}] 말풍선 상호작용 시작! ({usageTime}초)");
 
             try
             {
@@ -72,10 +75,9 @@ namespace Bathhouse.NPC
                     // UI 진행률 업데이트 로직
                     if (_speechBubbleUI != null)
                     {
-                        _speechBubbleUI.UpdateFill(_currentTimer / _rewardData.timeLimit);
+                        _speechBubbleUI.UpdateFill(_currentTimer / _maxTimer);
                     }
-                    
-                    await System.Threading.Tasks.Task.Yield();
+                    await Cysharp.Threading.Tasks.UniTask.Yield();
                     _interactionCts.Token.ThrowIfCancellationRequested();
                 }
 
@@ -99,8 +101,22 @@ namespace Bathhouse.NPC
         {
             return facility == FacilityType.Counter ||
                    facility == FacilityType.TowelStorage ||
-                   facility == FacilityType.ScrubArea ||
-                   facility == FacilityType.Platform; // 만쥬 등
+                   facility == FacilityType.TowelReturn ||
+                   // ScrubArea는 ScrubAreaFacility에서 직접 말풍선을 띄우므로 중복을 피하기 위해 제외합니다.
+                   facility == FacilityType.Platform ||
+                   facility == FacilityType.DisposableDispenser;
+        }
+
+        private Bathhouse.Data.InteractionBubbleType GetBubbleTypeFromFacility(FacilityType facility)
+        {
+            switch (facility)
+            {
+                case FacilityType.Counter: return Bathhouse.Data.InteractionBubbleType.Counter;
+                case FacilityType.TowelStorage:
+                case FacilityType.TowelReturn: return Bathhouse.Data.InteractionBubbleType.Towel;
+                case FacilityType.Platform: return Bathhouse.Data.InteractionBubbleType.Platform;
+                default: return Bathhouse.Data.InteractionBubbleType.Counter; // 기본값
+            }
         }
 
         /// <summary>
@@ -110,23 +126,36 @@ namespace Bathhouse.NPC
         {
             if (!_isInteracting) return;
             
+            var rewardData = Bathhouse.Managers.InteractionManager.Instance?.GlobalRewardData;
+            if (rewardData == null) return;
+            
             _isInteracting = false;
+            _speechBubbleUI = null; // UI가 애니메이션 후 스스로 풀로 반환되므로 참조 해제
             
             // Phase 판별
-            float timeRatio = _currentTimer / _rewardData.timeLimit;
+            float timeRatio = _currentTimer / _maxTimer;
             int phase = GetPhaseFromRatio(timeRatio);
-            int reward = _rewardData.rewardTiers[phase];
+            int reward = rewardData.rewardTiers[phase];
 
             ApplySatisfactionReward(reward, phase);
+            
+            // 말풍선을 클릭하면 대기 시간을 즉시 건너뛰고 다음 행동으로 넘어감
+            if (_npcBase != null)
+            {
+                _npcBase.ForceFinishCurrentAction();
+            }
             
             _interactionCts?.Cancel();
         }
 
         private void ProcessTimeout()
         {
+            var rewardData = Bathhouse.Managers.InteractionManager.Instance?.GlobalRewardData;
+            if (rewardData == null) return;
+
             _isInteracting = false;
             int timeoutPhase = 3; // 가장 늦은 Phase
-            int penalty = _rewardData.rewardTiers[timeoutPhase];
+            int penalty = rewardData.rewardTiers[timeoutPhase];
             
             Debug.Log($"[{_npcBase.Data.name}] 상호작용 타임아웃!");
             ApplySatisfactionReward(penalty, timeoutPhase);
@@ -142,34 +171,30 @@ namespace Bathhouse.NPC
 
         private void ApplySatisfactionReward(int amount, int phase)
         {
-            Debug.Log($"[{_npcBase.Data.name}] 상호작용 완료! Phase: {phase}, 보상: {amount}");
+            string colorTag = amount > 0 ? "<color=#00FF00>" : (amount < 0 ? "<color=#FF0000>" : "<color=#FFFFFF>");
+            Debug.Log($"{colorTag}[{_npcBase.Data.name}] 상호작용 완료! Phase: {phase}, 보상: {amount}</color>");
             
-            // TODO: Global 만족도 시스템에 보상/패널티 전달
-            // if (_satisfactionSystem != null) _satisfactionSystem.AddSatisfaction(amount);
-            
-            // NPC 자체 만족도 갱신
-            if (_npcBase != null && _npcBase.Data != null)
+            // 글로벌 만족도 시스템에 보상/패널티 전달
+            if (Bathhouse.Managers.InteractionManager.Instance != null)
             {
-                // 기존 베이스에 반영 (실제 런타임용 인스턴스 데이터 구조가 있다면 거기에 반영)
+                Bathhouse.Managers.InteractionManager.Instance.AddSatisfaction(amount);
+            }
+            
+            // NPC 자체 런타임 만족도 갱신
+            if (_npcBase != null)
+            {
                 float convertedAmount = amount / 100f; // 임의 스케일링
-                _npcBase.Data.baseSatisfactionLevel = Mathf.Clamp01(_npcBase.Data.baseSatisfactionLevel + convertedAmount);
+                _npcBase.AddSatisfaction(convertedAmount);
             }
         }
 
         private void EndInteraction()
         {
             _isInteracting = false;
-            SetBubbleActive(false);
-        }
-
-        private void SetBubbleActive(bool isActive)
-        {
-            if (_speechBubbleUI != null)
+            if (_speechBubbleUI != null && Bathhouse.Managers.InteractionManager.Instance != null)
             {
-                if (isActive)
-                    _speechBubbleUI.Show();
-                else
-                    _speechBubbleUI.Hide();
+                Bathhouse.Managers.InteractionManager.Instance.ReturnBubble(_speechBubbleUI);
+                _speechBubbleUI = null;
             }
         }
 

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2198108443880995478}
   - component: {fileID: 2551591682794350644}
   - component: {fileID: 488246684897448523}
+  - component: {fileID: 6889567938236948508}
   m_Layer: 0
   m_Name: NPC
   m_TagString: Untagged
@@ -89,6 +90,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _idleAnimation: {fileID: 11400000, guid: 8aaae259f44660444a7e80b23fcd65e2, type: 2}
   _moveAnimation: {fileID: 11400000, guid: 070abe6a28404c0449ce4cd721a95ffb, type: 2}
+--- !u!114 &6889567938236948508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1504561867248386481}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86b16de23c649274594fa4332e9d5f07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _rewardData: {fileID: 11400000, guid: 4b05f8b608e94aa42965f40c09bfbb3e, type: 2}
+  _npcBase: {fileID: 2198108443880995478}
+  _speechBubbleUI: {fileID: 0}
 --- !u!1 &4479309985216374447
 GameObject:
   m_ObjectHideFlags: 0
@@ -100,6 +116,7 @@ GameObject:
   - component: {fileID: 7838269713956025154}
   - component: {fileID: 5868911138278195402}
   - component: {fileID: 7381208800533450934}
+  - component: {fileID: 3193323821615566747}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -160,8 +177,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: -2140642533
-  m_SortingLayer: 3
+  m_SortingLayerID: 991944485
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 1426269122, guid: d9de4553ec8a64747a687418d503e0cd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -173,7 +190,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
-  m_SpriteSortPoint: 0
+  m_SpriteSortPoint: 1
 --- !u!95 &7381208800533450934
 Animator:
   serializedVersion: 5
@@ -195,3 +212,17 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &3193323821615566747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4479309985216374447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7700227684a4854caacbd05a4c4061a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  updateInterval: 0.1
+  yOffset: 0

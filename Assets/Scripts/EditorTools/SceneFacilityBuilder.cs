@@ -4,7 +4,7 @@ using Bathhouse.Data;
 
 namespace Bathhouse.Tools
 {
-    public enum BuilderMode { Placement, Erase, SetWalkable, SetUnwalkable, SetSpawnPos }
+    public enum BuilderMode { None, Placement, Erase, SetWalkable, SetUnwalkable, SetSpawnPos }
 
     /// <summary>
     /// 씬에서 구조물을 마우스로 클릭해 시각적으로 배치할 수 있게 해주는 빌더 클래스입니다.

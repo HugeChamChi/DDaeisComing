@@ -9,6 +9,11 @@ namespace Bathhouse.EditorScripts
     public class SceneFacilityBuilderEditor : UnityEditor.Editor
     {
         private UnityEditor.Editor _cachedFacilityEditor;
+        
+        // 드래그 상태를 추적하기 위한 변수
+        private SceneFacilityInfo _draggedFacility = null;
+        private int _dragOffsetX = 0;
+        private int _dragOffsetY = 0;
 
         public override void OnInspectorGUI()
         {
@@ -20,6 +25,8 @@ namespace Bathhouse.EditorScripts
             GUILayout.Label("빌더 모드 (Builder Mode)", EditorStyles.boldLabel);
 
             GUILayout.BeginHorizontal();
+            if (GUILayout.Toggle(builder.currentMode == BuilderMode.None, "선택 모드", "Button"))
+                builder.currentMode = BuilderMode.None;
             if (GUILayout.Toggle(builder.currentMode == BuilderMode.Placement, "배치 모드", "Button"))
                 builder.currentMode = BuilderMode.Placement;
             if (GUILayout.Toggle(builder.currentMode == BuilderMode.Erase, "지우개 모드", "Button"))
@@ -153,48 +160,148 @@ namespace Bathhouse.EditorScripts
 
                 if (builder.currentMode == BuilderMode.Placement)
                 {
-                    if (data != null)
+                    if (e.type == EventType.MouseUp && e.button == 0)
                     {
-                        // 그리드 범위 안에 마우스가 있을 때만 프리뷰 표시
+                        if (_draggedFacility != null)
+                        {
+                            _draggedFacility = null;
+                            GUIUtility.hotControl = 0;
+                            e.Use();
+                        }
+                    }
+                    else if (e.type == EventType.MouseDrag && _draggedFacility != null)
+                    {
+                        int targetX = gridX - _dragOffsetX;
+                        int targetY = gridY - _dragOffsetY;
+
+                        targetX = Mathf.Clamp(targetX, 0, builder.gridWidth - _draggedFacility.facilityData.width);
+                        targetY = Mathf.Clamp(targetY, 0, builder.gridHeight - _draggedFacility.facilityData.height);
+
+                        bool canMove = true;
+                        if (builder.tiles != null)
+                        {
+                            for (int i = 0; i < _draggedFacility.facilityData.width; i++)
+                            {
+                                for (int j = 0; j < _draggedFacility.facilityData.height; j++)
+                                {
+                                    int checkX = targetX + i;
+                                    int checkY = targetY + j;
+                                    bool isOwnTile = (checkX >= _draggedFacility.gridX && checkX < _draggedFacility.gridX + _draggedFacility.facilityData.width) &&
+                                                     (checkY >= _draggedFacility.gridY && checkY < _draggedFacility.gridY + _draggedFacility.facilityData.height);
+                                    
+                                    if (!isOwnTile)
+                                    {
+                                        GridTileData tile = builder.tiles.Find(t => t.x == checkX && t.y == checkY);
+                                        if (tile == null || !tile.isWalkable)
+                                        {
+                                            canMove = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!canMove) break;
+                            }
+                        }
+
+                        if (canMove)
+                        {
+                            if (_draggedFacility.gridX != targetX || _draggedFacility.gridY != targetY)
+                            {
+                                Undo.RecordObject(_draggedFacility, "Move Facility");
+                                _draggedFacility.gridX = targetX;
+                                _draggedFacility.gridY = targetY;
+                                if (PrefabUtility.IsPartOfPrefabInstance(_draggedFacility))
+                                    PrefabUtility.RecordPrefabInstancePropertyModifications(_draggedFacility);
+                                else
+                                    EditorUtility.SetDirty(_draggedFacility);
+                            }
+                        }
+                        e.Use();
+                    }
+                    else if (e.type == EventType.MouseDown && e.button == 0 && e.modifiers == EventModifiers.None)
+                    {
+                        SceneFacilityInfo existing = GetFacilityAt(builder, gridX, gridY);
+                        if (existing != null)
+                        {
+                            GUIUtility.hotControl = controlID;
+                            _draggedFacility = existing;
+                            _dragOffsetX = gridX - existing.gridX;
+                            _dragOffsetY = gridY - existing.gridY;
+                            e.Use();
+                        }
+                        else if (data != null)
+                        {
+                            if (gridX >= 0 && gridX <= builder.gridWidth - data.width && 
+                                gridY >= 0 && gridY <= builder.gridHeight - data.height)
+                            {
+                                GUIUtility.hotControl = controlID;
+                                bool canPlace = true;
+                                if (builder.tiles != null)
+                                {
+                                    for (int i = 0; i < data.width; i++)
+                                    {
+                                        for (int j = 0; j < data.height; j++)
+                                        {
+                                            GridTileData tile = builder.tiles.Find(t => t.x == gridX + i && t.y == gridY + j);
+                                            if (tile == null || !tile.isWalkable) { canPlace = false; break; }
+                                        }
+                                        if (!canPlace) break;
+                                    }
+                                }
+                                
+                                if (canPlace)
+                                {
+                                    PlaceFacility(builder, data, gridX, gridY);
+                                }
+                                else
+                                {
+                                    Debug.LogWarning("해당 위치에는 이미 다른 구조물이 있거나 배치할 수 없는 타일입니다.");
+                                }
+                                e.Use();
+                            }
+                        }
+                    }
+                    else if (e.type == EventType.MouseDown && e.button == 1 && e.modifiers == EventModifiers.None)
+                    {
+                        GUIUtility.hotControl = controlID;
+                        EraseFacilityAt(builder, gridX, gridY);
+                        e.Use();
+                    }
+                    
+                    if (e.type == EventType.Repaint && data != null && _draggedFacility == null)
+                    {
                         if (gridX >= 0 && gridX <= builder.gridWidth - data.width && 
                             gridY >= 0 && gridY <= builder.gridHeight - data.height)
                         {
-                            // 프리뷰 박스 (초록색) 그리기
+                            bool canPlace = true;
+                            if (builder.tiles != null)
+                            {
+                                for (int i = 0; i < data.width; i++)
+                                {
+                                    for (int j = 0; j < data.height; j++)
+                                    {
+                                        GridTileData tile = builder.tiles.Find(t => t.x == gridX + i && t.y == gridY + j);
+                                        if (tile == null || !tile.isWalkable) { canPlace = false; break; }
+                                    }
+                                    if (!canPlace) break;
+                                }
+                            }
+
                             Vector3 previewPos = builder.transform.position + new Vector3(
-                                gridX * builder.nodeSize,
-                                gridY * builder.nodeSize,
-                                0f);
+                                gridX * builder.nodeSize, gridY * builder.nodeSize, 0f);
                                 
                             Vector3 previewSize = new Vector3(
-                                data.width * builder.nodeSize,
-                                data.height * builder.nodeSize,
-                                0f);
+                                data.width * builder.nodeSize, data.height * builder.nodeSize, 0f);
 
-                            Handles.color = new Color(0f, 1f, 0f, 0.2f);
-                            // 사각형을 채워서 그림
-                            Vector3[] verts = new Vector3[]
-                            {
-                                previewPos,
-                                previewPos + new Vector3(previewSize.x, 0, 0),
-                                previewPos + new Vector3(previewSize.x, previewSize.y, 0),
-                                previewPos + new Vector3(0, previewSize.y, 0)
+                            Color faceColor = canPlace ? new Color(0, 1, 0, 0.2f) : new Color(1, 0, 0, 0.2f);
+                            Color outlineColor = canPlace ? Color.green : Color.red;
+
+                            Handles.color = faceColor;
+                            Vector3[] verts = new Vector3[] {
+                                previewPos, previewPos + new Vector3(previewSize.x, 0, 0),
+                                previewPos + new Vector3(previewSize.x, previewSize.y, 0), previewPos + new Vector3(0, previewSize.y, 0)
                             };
-                            Handles.DrawSolidRectangleWithOutline(verts, new Color(0, 1, 0, 0.2f), Color.green);
-
-                            // 씬 뷰에서 좌클릭(버튼 0)하면 구조물 생성
-                            if (e.type == EventType.MouseDown && e.button == 0 && e.modifiers == EventModifiers.None)
-                            {
-                                GUIUtility.hotControl = controlID;
-                                PlaceFacility(builder, data, gridX, gridY);
-                                e.Use(); // 이벤트 소모 (선택 변경 방지)
-                            }
-                            // 우클릭(버튼 1)하면 구조물 삭제
-                            else if (e.type == EventType.MouseDown && e.button == 1 && e.modifiers == EventModifiers.None)
-                            {
-                                GUIUtility.hotControl = controlID;
-                                EraseFacilityAt(builder, gridX, gridY);
-                                e.Use();
-                            }
+                            Handles.DrawSolidRectangleWithOutline(verts, faceColor, outlineColor);
                         }
                     }
                 }
@@ -271,8 +378,8 @@ namespace Bathhouse.EditorScripts
                 }
             }
 
-            // 레이아웃 이벤트일 때 패시브 컨트롤 추가 (클릭 시 다른 오브젝트 선택 방지용)
-            if (e.type == EventType.Layout)
+            // 선택 모드(None)가 아닐 때만 씬의 다른 오브젝트 선택을 막음
+            if (builder.currentMode != BuilderMode.None && e.type == EventType.Layout)
             {
                 HandleUtility.AddDefaultControl(controlID);
             }
@@ -280,29 +387,8 @@ namespace Bathhouse.EditorScripts
 
         private void PlaceFacility(SceneFacilityBuilder builder, FacilityData data, int x, int y)
         {
-            // 중앙점 계산 (오브젝트의 중심)
-            Vector3 center = builder.transform.position + new Vector3(
-                x * builder.nodeSize + (data.width * builder.nodeSize) / 2f,
-                y * builder.nodeSize + (data.height * builder.nodeSize) / 2f,
-                0);
-
-            // 프리팹 인스턴스화
-            GameObject go;
-            if (data.visualPrefab != null) {
-                go = (GameObject)PrefabUtility.InstantiatePrefab(data.visualPrefab);
-            } else {
-                go = new GameObject(data.facilityName);
-            }
-            go.transform.position = center + data.visualPosOffset;
-            go.transform.localScale = data.visualScaleOffset;
-
-            // SceneFacilityInfo 추가/수정하여 정보 저장
-            SceneFacilityInfo info = go.GetComponent<SceneFacilityInfo>();
-            if (info == null) info = go.AddComponent<SceneFacilityInfo>();
-            
-            info.facilityData = data;
-            info.gridX = x;
-            info.gridY = y;
+            Undo.IncrementCurrentGroup();
+            int undoGroup = Undo.GetCurrentGroup();
 
             Transform mainParent = builder.facilityParent != null ? builder.facilityParent : builder.transform;
             string groupName = data.facilityType.ToString() + "_Parent";
@@ -317,13 +403,56 @@ namespace Bathhouse.EditorScripts
                 Undo.RegisterCreatedObjectUndo(groupGo, $"Create {groupName}");
             }
 
-            go.transform.SetParent(groupParent);
+            // 중앙점 계산 (오브젝트의 중심)
+            Vector3 center = builder.transform.position + new Vector3(
+                x * builder.nodeSize + (data.width * builder.nodeSize) / 2f,
+                y * builder.nodeSize + (data.height * builder.nodeSize) / 2f,
+                0);
 
-            // Undo 스택에 등록하여 Ctrl+Z 지원
+            // 프리팹 인스턴스화
+            GameObject go;
+            if (data.visualPrefab != null) {
+                // 부모를 지정하여 생성하면 별도의 SetTransformParent 없이 Undo 가능
+                go = (GameObject)PrefabUtility.InstantiatePrefab(data.visualPrefab, groupParent);
+            } else {
+                go = new GameObject(data.facilityName);
+                go.transform.SetParent(groupParent);
+            }
+            
+            // Undo 스택에 생성 등록
             Undo.RegisterCreatedObjectUndo(go, $"Place {data.facilityName}");
+
+            go.transform.position = center + data.visualPosOffset;
+            go.transform.localScale = data.visualScaleOffset;
+
+            // SceneFacilityInfo 추가/수정하여 정보 저장
+            SceneFacilityInfo info = go.GetComponent<SceneFacilityInfo>();
+            if (info == null) 
+            {
+                info = Undo.AddComponent<SceneFacilityInfo>(go);
+            }
+            else
+            {
+                Undo.RecordObject(info, "Set Facility Data");
+            }
+            
+            info.facilityData = data;
+            info.gridX = x;
+            info.gridY = y;
+            
+            if (PrefabUtility.IsPartOfPrefabInstance(info))
+            {
+                PrefabUtility.RecordPrefabInstancePropertyModifications(info);
+            }
+            else
+            {
+                EditorUtility.SetDirty(info);
+            }
+
+            Undo.CollapseUndoOperations(undoGroup);
         }
 
-        private void EraseFacilityAt(SceneFacilityBuilder builder, int x, int y)
+        private SceneFacilityInfo GetFacilityAt(SceneFacilityBuilder builder, int x, int y)
         {
             Transform parent = builder.facilityParent != null ? builder.facilityParent : builder.transform;
             SceneFacilityInfo[] infos = parent.GetComponentsInChildren<SceneFacilityInfo>();
@@ -334,10 +463,19 @@ namespace Bathhouse.EditorScripts
                     if (x >= info.gridX && x < info.gridX + info.facilityData.width &&
                         y >= info.gridY && y < info.gridY + info.facilityData.height)
                     {
-                        Undo.DestroyObjectImmediate(info.gameObject);
-                        break;
+                        return info;
                     }
                 }
+            }
+            return null;
+        }
+
+        private void EraseFacilityAt(SceneFacilityBuilder builder, int x, int y)
+        {
+            SceneFacilityInfo info = GetFacilityAt(builder, x, y);
+            if (info != null)
+            {
+                Undo.DestroyObjectImmediate(info.gameObject);
             }
         }
 
