@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24432e3d967c5754c9f931fff426fdc8, type: 3}
-  m_Name: Towel_Return
+  m_Name: Trash_Bin
   m_EditorClassIdentifier: 
-  facilityType: 6
-  facilityName: "\uD0C0\uC6D4 \uC218\uAC70\uD568"
+  facilityType: 13
+  facilityName: "\uC4F0\uB808\uAE30 \uD1B5"
   width: 2
   height: 2
   interactionOffsets:
-  - {x: -2, y: 0}
+  - {x: 2, y: 0}
   maxCapacity: 1
-  baseUseTime: 1
+  baseUseTime: 3
   usageCooldown: 0
   cost: 0
   cleanlinessDropPerUse: 5
-  visualPrefab: {fileID: 2783644997720154662, guid: 4321d63f8136b39459e8ff589f807455,
+  visualPrefab: {fileID: 2783644997720154662, guid: cb4c263483aed284290b605f4beb03f9,
     type: 3}
   visualPosOffset: {x: 0, y: 0, z: 0}
   visualScaleOffset: {x: 1, y: 1, z: 1}

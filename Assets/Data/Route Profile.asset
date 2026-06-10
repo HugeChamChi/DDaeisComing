@@ -37,6 +37,9 @@ MonoBehaviour:
   - structureType: 10
     isMandatory: 0
     baseProbability: 0.5
+  - structureType: 13
+    isMandatory: 1
+    baseProbability: 1
   - structureType: 6
     isMandatory: 1
     baseProbability: 1

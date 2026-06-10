@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Bathhouse.Data;
 
 namespace Bathhouse.Managers
@@ -10,9 +10,27 @@ namespace Bathhouse.Managers
     public class DataManager : MonoBehaviour
     {
         public GameData Current { get; private set; }
+        public DailyRecordModel DailyRecord { get; private set; }
+
+        public FacilityIncomeDataSO IncomeDataSO { get; private set; }
+        public GameConfigSO Config { get; private set; }
 
         public void InitializeData()
         {
+            DailyRecord = new DailyRecordModel();
+            
+            Config = Resources.Load<GameConfigSO>("GameConfig");
+            if (Config == null)
+            {
+                Debug.LogWarning("[DataManager] GameConfig를 Resources 폴더에서 찾을 수 없습니다! 기본값을 사용하려면 Resources 폴더에 'GameConfig' SO를 생성하세요.");
+                Config = ScriptableObject.CreateInstance<GameConfigSO>();
+            }
+
+            IncomeDataSO = Resources.Load<FacilityIncomeDataSO>("FacilityIncomeData");
+            if (IncomeDataSO != null)
+            {
+                IncomeDataSO.Initialize();
+            }
             if (GameManager.Save != null)
             {
                 Current = GameManager.Save.LoadGame();

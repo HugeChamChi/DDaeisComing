@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1784520706358342963}
   - component: {fileID: 7851669211336432613}
-  - component: {fileID: 3390593316768988915}
+  - component: {fileID: 73429106330163952}
   m_Layer: 0
   m_Name: BeverageDispenser
   m_TagString: Untagged
@@ -104,7 +104,7 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 991944485
-  m_SortingLayer: 2
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 8534ed17a8542024f886aa1f37414785, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -117,7 +117,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 1
---- !u!114 &3390593316768988915
+--- !u!114 &73429106330163952
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -126,12 +126,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 9171567558438199343}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3fb64b30a4651494ba0b8c9a70f69357, type: 3}
+  m_Script: {fileID: 11500000, guid: 219e17ad896a7db49ab74d493c425b71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _data: {fileID: 11400000, guid: 9a7924580dc32e54f9a9cfaaecbd676c, type: 2}
-  slots:
-  - {fileID: 9172335798611200500}
+  _data: {fileID: 11400000, guid: 18e2ffd8efe626f41a4f34c279827213, type: 2}
+  slots: []
+  useRandomArea: 0
+  randomAreaSize: {x: 2, y: 2}
+  allowSharedSlots: 1
   _currentUsers: 0
   _currentCleanliness: 100
   teleportToSlotOnUse: 0

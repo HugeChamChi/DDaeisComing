@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Pool;
 using System.Collections;
 using Bathhouse.NPC;
@@ -26,6 +26,22 @@ namespace Bathhouse.Managers
         // The service injected into each NPC
         private PathfindingService _pathfindingService;
 
+        private void Start()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnNoMoreCustomers += StopSpawning;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnNoMoreCustomers -= StopSpawning;
+            }
+        }
+
         public void Initialize(IGridMap gridMap, int spawnX, int spawnY)
         {
             // Initialize the pathfinding service once per spawner
@@ -50,6 +66,11 @@ namespace Bathhouse.Managers
                     npc.gameObject.SetActive(true);
                     // Injecting route profile and pathfinder
                     npc.Initialize(defaultNpcData, defaultRouteProfile, _pathfindingService, OnNpcExit);
+                    
+                    if (GameManager.Data != null && GameManager.Data.DailyRecord != null)
+                    {
+                        GameManager.Data.DailyRecord.AddVisit();
+                    }
                 },
                 actionOnRelease: (npc) => npc.gameObject.SetActive(false),
                 actionOnDestroy: (npc) => Destroy(npc.gameObject),

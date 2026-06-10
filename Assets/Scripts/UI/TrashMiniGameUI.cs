@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System;
@@ -22,10 +22,26 @@ namespace Bathhouse.MiniGames
         private int _totalTrashCount = 0;
         private List<GameObject> _activeTrashes = new List<GameObject>();
 
+        private int _overrideTrashCount = -1;
+
+        public void SetCustomTrashCount(int count)
+        {
+            _overrideTrashCount = count;
+        }
+
         protected override void OnGameStarted()
         {
-            // 난이도에 따라 쓰레기 개수 증가
-            _totalTrashCount = Mathf.RoundToInt(baseTrashCount * _finalDifficultyWeight);
+            if (_overrideTrashCount > 0)
+            {
+                _totalTrashCount = _overrideTrashCount;
+                _overrideTrashCount = -1;
+            }
+            else
+            {
+                // 난이도에 따라 쓰레기 개수 증가
+                _totalTrashCount = Mathf.RoundToInt(baseTrashCount * _finalDifficultyWeight);
+            }
+            
             _currentTrashCount = 0;
 
             SpawnTrashes();

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+using System;
+using UnityEngine;
 using Bathhouse.Data;
 
 namespace Bathhouse.Managers
@@ -24,6 +25,13 @@ namespace Bathhouse.Managers
         [SerializeField] private InteractionManager _interactionManager;
         [SerializeField] private FacilityManager _facilityManager;
         [SerializeField] private DataManager _dataManager;
+
+        public event Action OnNoMoreCustomers;
+        public event Action OnDayEnded;
+
+        private float currentDayTime = 0f;
+        private bool isNoMoreCustomersTriggered = false;
+        private bool isDayEnded = false;
 
         private void Awake()
         {
@@ -62,6 +70,28 @@ namespace Bathhouse.Managers
             {
                 _dataManager = GetComponentInChildren<DataManager>();
                 if (_dataManager == null) _dataManager = gameObject.AddComponent<DataManager>();
+            }
+        }
+
+        private void Update()
+        {
+            if (isDayEnded || _dataManager?.Current == null) return;
+
+            currentDayTime += Time.deltaTime;
+
+            float dayDuration = _dataManager.Config.dayDurationSeconds;
+            float threshold = _dataManager.Config.noCustomerTimeThreshold;
+
+            if (!isNoMoreCustomersTriggered && (dayDuration - currentDayTime <= threshold))
+            {
+                isNoMoreCustomersTriggered = true;
+                OnNoMoreCustomers?.Invoke();
+            }
+
+            if (currentDayTime >= dayDuration)
+            {
+                isDayEnded = true;
+                OnDayEnded?.Invoke();
             }
         }
     }

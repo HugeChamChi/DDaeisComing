@@ -1,4 +1,4 @@
-﻿using Bathhouse.UI;
+using Bathhouse.UI;
 using Bathhouse.Data;
 using Bathhouse.Managers;
 using System;
@@ -106,8 +106,7 @@ namespace Bathhouse.NPC
                    facility == FacilityType.TowelStorage ||
                    facility == FacilityType.TowelReturn ||
                    // ScrubArea는 ScrubAreaFacility에서 직접 말풍선을 띄우므로 중복을 피하기 위해 제외합니다.
-                   facility == FacilityType.Platform ||
-                   facility == FacilityType.DisposableDispenser;
+                   facility == FacilityType.Platform;
         }
 
         private InteractionBubbleType GetBubbleTypeFromFacility(FacilityType facility)

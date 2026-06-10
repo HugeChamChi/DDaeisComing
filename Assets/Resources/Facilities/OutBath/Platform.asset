@@ -17,7 +17,7 @@ MonoBehaviour:
   width: 10
   height: 6
   interactionOffsets:
-  - {x: 5, y: -1}
+  - {x: 5, y: -2}
   maxCapacity: 1
   baseUseTime: 2
   usageCooldown: 0

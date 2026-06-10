@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using Bathhouse.Data;
 
@@ -14,6 +14,15 @@ namespace Bathhouse.Facilities
         public FacilityData Data => _data;
 
         public List<Transform> slots = new List<Transform>();
+
+        [Header("Slot vs Area Settings")]
+        [Tooltip("체크하면 개별 Transform 슬롯 대신, 지정된 영역(Area) 내에서 랜덤한 위치를 사용합니다.")]
+        public bool useRandomArea = false;
+        [Tooltip("랜덤 영역의 크기 (useRandomArea가 true일 때만 사용)")]
+        public Vector2 randomAreaSize = new Vector2(2f, 2f);
+        
+        [Tooltip("체크하면 하나의 Transform 슬롯(자리)에 여러 명의 NPC가 동시에 겹쳐서 사용할 수 있습니다. (예: 수건 보관함)")]
+        public bool allowSharedSlots = false;
 
         public int GridX { get; protected set; }
         public int GridY { get; protected set; }
@@ -37,6 +46,9 @@ namespace Bathhouse.Facilities
         protected NPC.NPC_Base[] _occupants;
         protected NPC.NPC_Base[] _reservers; // 미리 자리를 찜해둔 NPC
         protected float[] _slotCooldowns;
+        
+        // 영역 모드일 때 생성된 랜덤 위치들을 캐싱하는 배열
+        protected Vector3[] _areaSlotPositions;
 
         /// <summary>
         /// 인게임 맵 로딩 시 매니저가 호출하여 초기화합니다.
@@ -51,11 +63,21 @@ namespace Bathhouse.Facilities
             _currentUsers = 0;
             _currentCleanliness = 100f;
             
-            // 수용 인원만큼 슬롯 배열 할당
-            int capacity = slots.Count > 0 ? slots.Count : _data.maxCapacity;
+            // 수용 인원 결정: 공유 슬롯이거나 Area 모드이거나 슬롯이 없으면 data.maxCapacity 사용, 아니면 slots.Count
+            int capacity = _data.maxCapacity;
+            if (slots.Count > 0 && !useRandomArea && !allowSharedSlots)
+            {
+                capacity = slots.Count;
+            }
+            
             _occupants = new NPC.NPC_Base[capacity];
             _reservers = new NPC.NPC_Base[capacity];
             _slotCooldowns = new float[capacity];
+            
+            if (useRandomArea)
+            {
+                _areaSlotPositions = new Vector3[capacity];
+            }
 
             RefreshPosition();
         }
@@ -140,6 +162,15 @@ namespace Bathhouse.Facilities
             if (slotIndex != -1)
             {
                 _reservers[slotIndex] = npc;
+
+                // 만약 Area 모드라면, 예약 시점에 구역 내 랜덤한 목적지 좌표를 생성해 둡니다.
+                if (useRandomArea && _areaSlotPositions != null)
+                {
+                    float rx = UnityEngine.Random.Range(-randomAreaSize.x / 2f, randomAreaSize.x / 2f);
+                    float ry = UnityEngine.Random.Range(-randomAreaSize.y / 2f, randomAreaSize.y / 2f);
+                    _areaSlotPositions[slotIndex] = transform.position + new Vector3(rx, ry, 0);
+                }
+
                 return true;
             }
             return false;
@@ -169,11 +200,19 @@ namespace Bathhouse.Facilities
 
         public virtual Vector3 GetUsageWorldPosition(int slotIndex)
         {
-            if (slots != null && slots.Count > 0)
+            if (useRandomArea && _areaSlotPositions != null)
             {
-                if (slotIndex >= 0 && slotIndex < slots.Count)
+                if (slotIndex >= 0 && slotIndex < _areaSlotPositions.Length)
                 {
-                    return slots[slotIndex].position;
+                    return _areaSlotPositions[slotIndex];
+                }
+            }
+            else if (slots != null && slots.Count > 0)
+            {
+                int visualSlotIndex = allowSharedSlots ? (slotIndex % slots.Count) : slotIndex;
+                if (visualSlotIndex >= 0 && visualSlotIndex < slots.Count)
+                {
+                    return slots[visualSlotIndex].position;
                 }
             }
 
@@ -235,6 +274,20 @@ namespace Bathhouse.Facilities
             if (animController != null)
             {
                 animController.StopFacilityAction();
+            }
+
+            // 통계 및 수익 반영
+            if (_data != null && Managers.GameManager.Data != null && Managers.GameManager.Data.DailyRecord != null)
+            {
+                var dailyRecord = Managers.GameManager.Data.DailyRecord;
+                dailyRecord.AddFacilityUsage(_data.facilityType);
+                
+                var incomeDataSO = Managers.GameManager.Data.IncomeDataSO;
+                if (incomeDataSO != null)
+                {
+                    int income = incomeDataSO.GetIncomeData(_data.facilityType).incomeAmount;
+                    dailyRecord.AddIncome(income);
+                }
             }
         }
 
@@ -322,6 +375,18 @@ namespace Bathhouse.Facilities
             }
 
             return 0;
+        }
+
+        protected virtual void OnDrawGizmosSelected()
+        {
+            if (useRandomArea)
+            {
+                // 인스펙터에서 설정한 크기를 에디터 씬 뷰에 초록색 투명 박스로 그려줍니다.
+                Gizmos.color = new Color(0f, 1f, 0f, 0.2f);
+                Gizmos.DrawCube(transform.position, new Vector3(randomAreaSize.x, randomAreaSize.y, 1f));
+                Gizmos.color = Color.green;
+                Gizmos.DrawWireCube(transform.position, new Vector3(randomAreaSize.x, randomAreaSize.y, 1f));
+            }
         }
     }
 }

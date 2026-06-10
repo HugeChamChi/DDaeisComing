@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Bathhouse.Data
 {
@@ -19,5 +19,7 @@ namespace Bathhouse.Data
         ScrubArea = 10,             // 때밀이 공간
         Bath = 11,                  // 탕 (온탕/냉탕)
         Sauna = 12,                 // 사우나
+
+        TrashBin = 13,              // 쓰레기통
     }
 }
