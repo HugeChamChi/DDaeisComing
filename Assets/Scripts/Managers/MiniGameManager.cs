@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using UnityEngine;
-using Bathhouse.MiniGames;
-using DDaeisComing.Attributes;
 using Bathhouse.Facilities;
-using System;
+using Bathhouse.MiniGames;
+using UnityEngine;
 
 namespace Bathhouse.Managers
 {
@@ -30,6 +27,34 @@ namespace Bathhouse.Managers
             }
         }
 
+        private void Start()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnDayEnded += ForceStopAllGames;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnDayEnded -= ForceStopAllGames;
+            }
+        }
+
+        public void ForceStopAllGames()
+        {
+            if (scrubMiniGame != null && scrubMiniGame.gameObject.activeInHierarchy)
+            {
+                scrubMiniGame.gameObject.SetActive(false);
+            }
+            if (trashMiniGame != null && trashMiniGame.gameObject.activeInHierarchy)
+            {
+                trashMiniGame.gameObject.SetActive(false);
+            }
+        }
+
         // ContextMenu 혹은 Button 속성을 이용해 에디터에서 쉽게 테스트 가능
         [Button("Test Start Scrub Game")]
         public void TestStartScrubGame()
@@ -38,8 +63,8 @@ namespace Bathhouse.Managers
             {
                 Debug.Log($"[MiniGameManager] Testing Scrub Mini Game for Day {testDay}");
                 // 임의의 NPC 객체를 넘기거나 null 넘김
-                scrubMiniGame.StartMiniGame(null, testDay, 
-                    () => Debug.Log("Scrub Game Success Callback!"), 
+                scrubMiniGame.StartMiniGame(null, testDay,
+                    () => Debug.Log("Scrub Game Success Callback!"),
                     () => Debug.Log("Scrub Game Fail Callback!"));
             }
             else
@@ -54,8 +79,8 @@ namespace Bathhouse.Managers
             if (trashMiniGame != null)
             {
                 Debug.Log($"[MiniGameManager] Testing Trash Mini Game for Day {testDay}");
-                trashMiniGame.StartMiniGame(testDay, 
-                    () => Debug.Log("Trash Game Success Callback!"), 
+                trashMiniGame.StartMiniGame(testDay,
+                    () => Debug.Log("Trash Game Success Callback!"),
                     () => Debug.Log("Trash Game Fail Callback!"));
             }
             else
@@ -77,13 +102,13 @@ namespace Bathhouse.Managers
                 // 현재 게이지 수치만큼 쓰레기가 나오도록 설정
                 trashMiniGame.SetCustomTrashCount(Mathf.RoundToInt(targetBin.GetState().currentGauge));
 
-                trashMiniGame.StartMiniGame(dayToUse, 
-                    () => 
+                trashMiniGame.StartMiniGame(dayToUse,
+                    () =>
                     {
                         targetBin.ReduceGauge();
                         targetBin.SetMinigamePlaying(false);
-                    }, 
-                    () => 
+                    },
+                    () =>
                     {
                         targetBin.SetMinigamePlaying(false);
                     });

@@ -28,6 +28,7 @@ namespace Bathhouse.Managers
 
         public event Action OnNoMoreCustomers;
         public event Action OnDayEnded;
+        public event Action OnNextDayStarted;
 
         private float currentDayTime = 0f;
         private bool isNoMoreCustomersTriggered = false;
@@ -93,6 +94,25 @@ namespace Bathhouse.Managers
                 isDayEnded = true;
                 OnDayEnded?.Invoke();
             }
+        }
+
+        public void StartNextDay()
+        {
+            currentDayTime = 0f;
+            isDayEnded = false;
+            isNoMoreCustomersTriggered = false;
+
+            if (_dataManager != null)
+            {
+                _dataManager.Current?.AdvanceToNextDay();
+                _dataManager.DailyRecord?.Reset();
+                _dataManager.SaveData();
+            }
+
+            Time.timeScale = 1f;
+            OnNextDayStarted?.Invoke();
+            
+            Debug.Log("[GameManager] 다음 날 사이클이 시작되었습니다.");
         }
     }
 }

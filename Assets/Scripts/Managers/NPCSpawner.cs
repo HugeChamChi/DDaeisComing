@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Pool;
-using System.Collections;
+using Cysharp.Threading.Tasks;
+using System.Threading;
 using Bathhouse.NPC;
 using Bathhouse.Data;
 using Bathhouse.Pathfinding;
@@ -21,16 +22,18 @@ namespace Bathhouse.Managers
         private Vector3 _spawnPosition;
 
         private ObjectPool<NPC_Base> _pool;
-        private Coroutine _spawnCoroutine;
+        private CancellationTokenSource _spawnCts;
         
         // The service injected into each NPC
         private PathfindingService _pathfindingService;
+        private System.Collections.Generic.HashSet<NPC_Base> _activeNPCs = new System.Collections.Generic.HashSet<NPC_Base>();
 
         private void Start()
         {
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnNoMoreCustomers += StopSpawning;
+                GameManager.Instance.OnNextDayStarted += OnNextDayStarted;
             }
         }
 
@@ -39,6 +42,7 @@ namespace Bathhouse.Managers
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnNoMoreCustomers -= StopSpawning;
+                GameManager.Instance.OnNextDayStarted -= OnNextDayStarted;
             }
         }
 
@@ -67,12 +71,18 @@ namespace Bathhouse.Managers
                     // Injecting route profile and pathfinder
                     npc.Initialize(defaultNpcData, defaultRouteProfile, _pathfindingService, OnNpcExit);
                     
+                    _activeNPCs.Add(npc);
+
                     if (GameManager.Data != null && GameManager.Data.DailyRecord != null)
                     {
                         GameManager.Data.DailyRecord.AddVisit();
                     }
                 },
-                actionOnRelease: (npc) => npc.gameObject.SetActive(false),
+                actionOnRelease: (npc) => 
+                {
+                    _activeNPCs.Remove(npc);
+                    npc.gameObject.SetActive(false);
+                },
                 actionOnDestroy: (npc) => Destroy(npc.gameObject),
                 collectionCheck: false,
                 defaultCapacity: 10,
@@ -80,27 +90,56 @@ namespace Bathhouse.Managers
             );
         }
 
+        private void OnNextDayStarted()
+        {
+            // 남은 NPC 강제 퇴장(풀 반환)
+            var activeArray = new NPC_Base[_activeNPCs.Count];
+            _activeNPCs.CopyTo(activeArray);
+            foreach (var npc in activeArray)
+            {
+                if (npc != null && npc.gameObject.activeInHierarchy)
+                {
+                    _pool.Release(npc);
+                }
+            }
+            _activeNPCs.Clear();
+
+            StartSpawning();
+        }
+
         public void StartSpawning()
         {
-            if (_spawnCoroutine != null) return;
-            _spawnCoroutine = StartCoroutine(SpawnRoutine());
+            if (_spawnCts != null) return;
+            
+            _spawnCts = new CancellationTokenSource();
+            SpawnRoutine(_spawnCts.Token).Forget();
         }
 
         public void StopSpawning()
         {
-            if (_spawnCoroutine != null)
+            if (_spawnCts != null)
             {
-                StopCoroutine(_spawnCoroutine);
-                _spawnCoroutine = null;
+                _spawnCts.Cancel();
+                _spawnCts.Dispose();
+                _spawnCts = null;
             }
         }
 
-        private IEnumerator SpawnRoutine()
+        private async UniTaskVoid SpawnRoutine(CancellationToken token)
         {
-            while (true)
+            try
             {
-                yield return new WaitForSeconds(spawnInterval);
-                _pool.Get();
+                while (!token.IsCancellationRequested)
+                {
+                    await UniTask.Delay(System.TimeSpan.FromSeconds(spawnInterval), cancellationToken: token);
+                    if (token.IsCancellationRequested) break;
+                    
+                    _pool.Get();
+                }
+            }
+            catch (System.OperationCanceledException)
+            {
+                // 취소 시 자연스럽게 종료
             }
         }
 

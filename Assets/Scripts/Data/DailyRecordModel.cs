@@ -8,6 +8,7 @@ namespace Bathhouse.Managers
         public int totalNPCVisits { get; private set; }
         public Dictionary<FacilityType, int> facilityUsageCounts { get; private set; }
         public int totalIncome { get; private set; }
+        public int totalExpense { get; private set; }
 
         public DailyRecordModel()
         {
@@ -36,11 +37,17 @@ namespace Bathhouse.Managers
             totalIncome += amount;
         }
 
+        public void AddExpense(int amount)
+        {
+            totalExpense += amount;
+        }
+
         public void Reset()
         {
             totalNPCVisits = 0;
             facilityUsageCounts.Clear();
             totalIncome = 0;
+            totalExpense = 0;
         }
     }
 }

@@ -12,6 +12,9 @@ namespace Bathhouse.Managers
         public GameData Current { get; private set; }
         public DailyRecordModel DailyRecord { get; private set; }
 
+        [Header("SO References (Optional)")]
+        [SerializeField] private FacilityIncomeDataSO _inspectorIncomeDataSO;
+
         public FacilityIncomeDataSO IncomeDataSO { get; private set; }
         public GameConfigSO Config { get; private set; }
 
@@ -26,7 +29,14 @@ namespace Bathhouse.Managers
                 Config = ScriptableObject.CreateInstance<GameConfigSO>();
             }
 
-            IncomeDataSO = Resources.Load<FacilityIncomeDataSO>("FacilityIncomeData");
+            if (_inspectorIncomeDataSO != null)
+            {
+                IncomeDataSO = _inspectorIncomeDataSO;
+            }
+            else
+            {
+                IncomeDataSO = Resources.Load<FacilityIncomeDataSO>("FacilityIncomeData");
+            }
             if (IncomeDataSO != null)
             {
                 IncomeDataSO.Initialize();

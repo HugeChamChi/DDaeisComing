@@ -4,6 +4,9 @@ using Bathhouse.Managers;
 using System.Collections.Generic;
 using Bathhouse.Data;
 using TMPro;
+using GaeGGUL.Animation;
+using Cysharp.Threading.Tasks;
+using Bathhouse.Utils;
 
 namespace Bathhouse.UI
 {
@@ -11,15 +14,22 @@ namespace Bathhouse.UI
     {
         [Header("UI References")]
         [SerializeField] private GameObject resultPanel;
-        [SerializeField] private TMP_Text txtTotalVisits;
         [SerializeField] private Transform itemContainer;
         [SerializeField] private GameObject resultItemPrefab;
-        [SerializeField] private TMP_Text txtTotalIncome;
         [SerializeField] private Button btnNextDay;
 
-        [Header("Animation (임시)")]
-        [Tooltip("팝업 창이 열릴 때 재생될 Animator (임시 스프라이트 애니메이션 적용용)")]
-        [SerializeField] private Animator popupAnimator;
+        [Header("Info Panel")]
+        [SerializeField] private TMP_Text txtDay;
+        [SerializeField] private TMP_Text txtTotalVisits;
+        [SerializeField] private TMP_Text txtTotalIncome;
+        [SerializeField] private TMP_Text txtTotalExpense;
+
+        [Header("Net Profit Slot")]
+        [SerializeField] private TMP_Text txtNetProfit;
+
+        [Header("Animation")]
+        [Tooltip("팝업 창이 열릴 때 재생될 커스텀 애니메이션 (Scale/Slide 등)")]
+        [SerializeField] private Anim_InOutBase popupAnim;
 
         private void Start()
         {
@@ -48,10 +58,10 @@ namespace Bathhouse.UI
         {
             if (resultPanel != null) resultPanel.SetActive(true);
 
-            if (popupAnimator != null)
+            if (popupAnim != null)
             {
-                // 스프라이트 애니메이션을 위해 팝업 열림 트리거 실행
-                popupAnimator.SetTrigger("Open");
+                // Slide나 Scale 등 설정된 커스텀 애니메이션의 In 효과 재생
+                popupAnim.PlayIn().Forget();
             }
 
             var dailyRecord = GameManager.Data.DailyRecord;
@@ -59,11 +69,14 @@ namespace Bathhouse.UI
 
             if (dailyRecord == null) return;
 
-            // 1. 총 방문객 표시
-            if (txtTotalVisits != null)
+            if (txtDay != null)
             {
-                txtTotalVisits.text = $"오늘의 방문 손님: {dailyRecord.totalNPCVisits}명";
+                int currentDay = GameManager.Data.Current != null ? GameManager.Data.Current.currentDay : 1;
+                txtDay.text = $"{currentDay}일째";
             }
+
+            // Info Panel (숫자 카운팅 애니메이션 실행)
+            AnimateInfoPanel(dailyRecord).Forget();
 
             // 2. 기존 목록 초기화
             foreach (Transform child in itemContainer)
@@ -71,68 +84,100 @@ namespace Bathhouse.UI
                 Destroy(child.gameObject);
             }
 
-            // 카운터(입장료) 계산 예시 (만약 카운터 상호작용이 따로 없다면 총 방문객으로 계산)
-            // 기본 요금이 GameData.currentGold나 다른 곳에 없다면 일단 방문객 * 기본요금으로 하거나,
-            // Counter 시설을 정상 이용했을 때 facilityUsageCounts에 등록된 값을 사용합니다.
-            // 여기서는 facilityUsageCounts에 등록된 내용을 순회하여 표시합니다.
-
-            foreach (var kvp in dailyRecord.facilityUsageCounts)
+            if (incomeDataSO != null)
             {
-                FacilityType type = kvp.Key;
-                int count = kvp.Value;
-                
-                string resultTextName = type.ToString();
-                int totalEarned = 0;
+                float slotAnimDelay = 0.3f; // 팝업 애니메이션 끝날 즈음 시작
 
-                if (incomeDataSO != null)
+                foreach (var entry in incomeDataSO.Entries)
                 {
-                    IncomeData data = incomeDataSO.GetIncomeData(type);
-                    resultTextName = string.IsNullOrEmpty(data.resultText) ? type.ToString() : data.resultText;
-                    totalEarned = count * data.incomeAmount;
-                }
+                    FacilityType type = entry.facilityType;
+                    IncomeData data = entry.incomeData;
 
-                if (totalEarned > 0 || count > 0)
-                {
-                    CreateResultItem($"{resultTextName}: {count}회 (+{totalEarned:N0})");
+                    int count = 0;
+                    if (dailyRecord.facilityUsageCounts.TryGetValue(type, out int c))
+                    {
+                        count = c;
+                    }
+                    
+                    string resultTextName = string.IsNullOrEmpty(data.resultText) ? type.ToString() : data.resultText;
+                    int costPerUse = data.incomeAmount;
+                    int totalEarned = count * costPerUse;
+                    Sprite icon = data.icon;
+
+                    // 0회 이용이어도 무조건 표시합니다.
+                    SalesSlotUI slot = CreateResultItem(icon, resultTextName, count, costPerUse, totalEarned);
+                    if (slot != null)
+                    {
+                        slot.PlayAnimInAsync(slotAnimDelay).Forget();
+                        slotAnimDelay += 0.15f; // 다음 슬롯은 0.15초 뒤에 올라옴
+                    }
                 }
             }
 
-            // 3. 총 수익 표시
-            if (txtTotalIncome != null)
-            {
-                txtTotalIncome.text = $"총 수익: {dailyRecord.totalIncome:N0} 골드";
-            }
-            
-            // 시간 타이머를 멈추기 위해 Time.timeScale 조절(선택 사항)
-            // Time.timeScale = 0f;
+            // 시간 타이머를 멈추기 위해 Time.timeScale 조절
+            Time.timeScale = 0f;
         }
 
-        private void CreateResultItem(string content)
+        private async UniTaskVoid AnimateInfoPanel(DailyRecordModel record)
         {
-            if (resultItemPrefab == null || itemContainer == null) return;
+            float duration = 0.5f;
+            float elapsed = 0f;
+
+            int targetVisits = record.totalNPCVisits;
+            int targetIncome = record.totalIncome;
+            int targetExpense = record.totalExpense;
+            int targetNetProfit = targetIncome - targetExpense;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float easeOutT = t * (2f - t);
+
+                if (txtTotalVisits != null) txtTotalVisits.text = Mathf.RoundToInt(Mathf.Lerp(0, targetVisits, easeOutT)).ToComma("명");
+                if (txtTotalIncome != null) txtTotalIncome.text = Mathf.RoundToInt(Mathf.Lerp(0, targetIncome, easeOutT)).ToComma("원");
+                if (txtTotalExpense != null) txtTotalExpense.text = Mathf.RoundToInt(Mathf.Lerp(0, targetExpense, easeOutT)).ToComma("원");
+                if (txtNetProfit != null) txtNetProfit.text = Mathf.RoundToInt(Mathf.Lerp(0, targetNetProfit, easeOutT)).ToComma("원");
+
+                await UniTask.Yield(PlayerLoopTiming.PostLateUpdate);
+            }
+
+            if (txtTotalVisits != null) txtTotalVisits.text = targetVisits.ToComma("명");
+            if (txtTotalIncome != null) txtTotalIncome.text = targetIncome.ToComma("원");
+            if (txtTotalExpense != null) txtTotalExpense.text = targetExpense.ToComma("원");
+            if (txtNetProfit != null) txtNetProfit.text = targetNetProfit.ToComma("원");
+        }
+
+        private SalesSlotUI CreateResultItem(Sprite icon, string name, int count, int costPerUse, int totalEarned)
+        {
+            if (resultItemPrefab == null || itemContainer == null) return null;
 
             GameObject go = Instantiate(resultItemPrefab, itemContainer);
-            TMP_Text txt = go.GetComponentInChildren<TMP_Text>();
-            if (txt != null)
+            SalesSlotUI slotUI = go.GetComponent<SalesSlotUI>();
+            if (slotUI != null)
             {
-                txt.text = content;
+                slotUI.SetData(icon, name, count, costPerUse, totalEarned);
             }
+            else
+            {
+                // 이전 구조의 텍스트 프리팹이 들어왔을 때를 대비한 예외처리
+                TMP_Text txt = go.GetComponentInChildren<TMP_Text>();
+                if (txt != null)
+                {
+                    txt.text = $"{name}: {count}회 x {costPerUse} (+{totalEarned:N0})";
+                }
+            }
+            return slotUI;
         }
 
         private void OnNextDayClicked()
         {
-            // 다음 날 처리 
-            // Time.timeScale = 1f;
-            if (GameManager.Data != null && GameManager.Data.Current != null)
-            {
-                GameManager.Data.Current.AdvanceToNextDay();
-                GameManager.Data.DailyRecord.Reset();
-            }
-
             if (resultPanel != null) resultPanel.SetActive(false);
 
-            // TODO: 씬 재시작 혹은 다음 날을 위한 변수 초기화 등 필요한 로직 호출
-            Debug.Log("[DailyResultUI] 다음 날 영업을 시작합니다!");
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.StartNextDay();
+            }
         }
     }
 }

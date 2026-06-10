@@ -1,4 +1,4 @@
-﻿using Bathhouse.Managers;
+using Bathhouse.Managers;
 using System.Collections.Generic;
 using UnityEngine;
 using Bathhouse.Data;
@@ -24,6 +24,7 @@ namespace Bathhouse.NPC
         protected FacilityType _currentDestination;
         protected Action<NPC_Base> _onExit;
         protected NPCInteractionController _interactionController;
+        protected NPCAnimationController _animController;
         
         protected Bathhouse.Facilities.FacilityBase _targetFacility;
         private bool _isActionForcedToFinish = false;
@@ -43,6 +44,7 @@ namespace Bathhouse.NPC
             _movement = GetComponent<NPCMovement>();
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _interactionController = GetComponent<NPCInteractionController>();
+            _animController = GetComponent<NPCAnimationController>();
 
             if (_spriteRenderer == null)
             {
@@ -213,19 +215,25 @@ namespace Bathhouse.NPC
                 _interactionController.StartInteractionAsync(type, waitTime);
             }
 
+            // 상호작용 애니메이션 실행
+            if (_animController != null)
+            {
+                _animController.PlayFacilityAction(type);
+            }
+
             // 상호작용 지점(O 마커) 저장
             Vector3 interactionPos = transform.position;
             var depthSorter = GetComponentInChildren<Bathhouse.Tools.DynamicDepthSorter>();
+
+            // 구조물 이용 시 무조건 구조물보다 높은 정렬(Order) 값을 갖도록 강제
+            if (depthSorter != null) depthSorter.IsPaused = true;
+            SetSortingOrder(facility.GetSortingOrder() + 1);
 
             if (facility.TeleportToSlotOnUse)
             {
                 // 머무는 자리(U 마커)로 이동 (구조물 내부)
                 Vector3 usagePos = facility.GetUsageWorldPosition(slot);
                 transform.position = usagePos;
-
-                // NPC가 구조물 내부로 들어갔으므로, 구조물 바로 위(앞)에 그려지도록 정렬 강제 세팅
-                if (depthSorter != null) depthSorter.IsPaused = true;
-                SetSortingOrder(facility.GetSortingOrder() + 1);
             }
 
             // Progress 루프 (매 프레임 호출)
@@ -255,9 +263,15 @@ namespace Bathhouse.NPC
             {
                 // 사용이 끝나면 구조물 내부(Slot)에서 다시 상호작용 노드 위치(밖)로 텔레포트 복귀
                 transform.position = interactionPos;
-                
-                // 동적 정렬 다시 켜기
-                if (depthSorter != null) depthSorter.IsPaused = false;
+            }
+
+            // 동적 정렬 다시 켜기
+            if (depthSorter != null) depthSorter.IsPaused = false;
+
+            // 상호작용 애니메이션 종료
+            if (_animController != null)
+            {
+                _animController.StopFacilityAction();
             }
 
             // 다음 행동 결정

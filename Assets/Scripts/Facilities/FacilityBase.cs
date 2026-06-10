@@ -82,6 +82,34 @@ namespace Bathhouse.Facilities
             RefreshPosition();
         }
 
+        protected virtual void Awake()
+        {
+            SyncChildSortingOrders();
+        }
+
+        protected virtual void OnValidate()
+        {
+            SyncChildSortingOrders();
+        }
+
+        [ContextMenu("Sync Child Sorting Orders")]
+        public void SyncChildSortingOrders()
+        {
+            var mainSr = GetComponent<SpriteRenderer>();
+            if (mainSr != null)
+            {
+                int baseOrder = mainSr.sortingOrder;
+                var childRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+                foreach (var child in childRenderers)
+                {
+                    if (child != mainSr)
+                    {
+                        child.sortingOrder = baseOrder + 1;
+                    }
+                }
+            }
+        }
+
         protected virtual void OnEnable()
         {
             FacilityData.OnDataChanged += HandleDataChanged;
@@ -357,19 +385,14 @@ namespace Bathhouse.Facilities
             var sg = GetComponent<UnityEngine.Rendering.SortingGroup>();
             if (sg != null) return sg.sortingOrder;
 
-            var sr = GetComponent<SpriteRenderer>();
-            if (sr != null) return sr.sortingOrder;
-
+            // 최상위뿐만 아니라 하위의 모든 SpriteRenderer를 검사하여 가장 높은 SortingOrder를 반환
             var childRenderers = GetComponentsInChildren<SpriteRenderer>(true);
             if (childRenderers != null && childRenderers.Length > 0)
             {
                 int maxOrder = int.MinValue;
                 foreach (var r in childRenderers)
                 {
-                    if (r.sortingOrder > maxOrder)
-                    {
-                        maxOrder = r.sortingOrder;
-                    }
+                    if (r.sortingOrder > maxOrder) maxOrder = r.sortingOrder;
                 }
                 return maxOrder;
             }

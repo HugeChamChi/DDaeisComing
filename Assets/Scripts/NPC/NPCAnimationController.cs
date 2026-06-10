@@ -1,4 +1,4 @@
-﻿using Bathhouse.Data;
+using Bathhouse.Data;
 using UnityEngine;
 
 namespace Bathhouse.NPC
@@ -148,23 +148,35 @@ namespace Bathhouse.NPC
             }
         }
 
-        // 4. 상호작용 애니메이션 (시설 이용 시)
         public void PlayFacilityAction(FacilityType facilityType)
         {
             _isUsingFacility = true;
-            string actionName = "Action_" + facilityType.ToString();
             
-            if (_animator != null)
+            if (facilityType == FacilityType.Platform)
             {
-                _animator.Play(actionName);
+                string actionName = "Action_Platform";
+                if (_animator != null)
+                {
+                    _animator.Play(actionName);
+                }
+                _currentStateName = actionName;
+            }
+            else
+            {
+                // 플랫폼이 아닌 경우 방향에 맞는 Idle 모션 재생
+                string actionName = GetStateName(false);
+                if (_animator != null && _currentStateName != actionName)
+                {
+                    _animator.Play(actionName);
+                }
+                _currentStateName = actionName;
             }
 
             if (_proceduralAnimator != null)
             {
-                _proceduralAnimator.PlayState(NPCProceduralAnimator.ProceduralState.Action);
+                // 움직일 때 빼고는 전부 숨쉬기(Idle) 절차적 애니메이션 적용
+                _proceduralAnimator.PlayState(NPCProceduralAnimator.ProceduralState.Idle);
             }
-            
-            _currentStateName = actionName;
         }
 
         public void StopFacilityAction()
