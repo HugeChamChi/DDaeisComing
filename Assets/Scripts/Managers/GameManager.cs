@@ -20,12 +20,10 @@ namespace Bathhouse.Managers
                 if (_instance == null)
                 {
                     _instance = FindFirstObjectByType<GameManager>();
-                    if (_instance == null)
+                    if (_instance != null)
                     {
-                        GameObject go = new GameObject("@GameManager");
-                        _instance = go.AddComponent<GameManager>();
+                        _instance.InitializeManagers();
                     }
-                    _instance.InitializeManagers();
                 }
                 return _instance;
             }
@@ -48,6 +46,9 @@ namespace Bathhouse.Managers
         private float currentDayTime = 0f;
         private bool isNoMoreCustomersTriggered = false;
         private bool isDayEnded = false;
+
+        public float CurrentDayTime => currentDayTime;
+        public float DayDuration => global::GlobalManagers.Data?.Config?.dayDurationSeconds ?? 60f;
 
         private void Awake()
         {

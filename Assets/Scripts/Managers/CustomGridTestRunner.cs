@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Bathhouse.Grid;
 using Bathhouse.Data;
 using Bathhouse.Pathfinding;
@@ -92,6 +92,9 @@ namespace Bathhouse.Managers
         private void FitCameraToGrid(MapData mapData)
         {
             if (Camera.main == null || !Camera.main.orthographic) return;
+
+            if (Camera.main.GetComponent<Bathhouse.Utils.DraggableCamera>() != null)
+                return;
 
             // 맵 전체 월드 크기 계산
             float mapWorldWidth = mapData.width * nodeSize;

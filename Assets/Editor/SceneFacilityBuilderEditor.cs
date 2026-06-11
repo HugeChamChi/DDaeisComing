@@ -15,6 +15,12 @@ namespace Bathhouse.EditorScripts
         private int _dragOffsetX = 0;
         private int _dragOffsetY = 0;
 
+        // 커스텀 맵 확장을 위한 변수
+        private int _expLeft = 0;
+        private int _expRight = 0;
+        private int _expTop = 0;
+        private int _expBottom = 0;
+
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
@@ -35,7 +41,20 @@ namespace Bathhouse.EditorScripts
                 builder.currentMode = BuilderMode.SetWalkable;
             if (GUILayout.Toggle(builder.currentMode == BuilderMode.SetUnwalkable, "길 차단", "Button"))
                 builder.currentMode = BuilderMode.SetUnwalkable;
+            if (GUILayout.Toggle(builder.currentMode == BuilderMode.InsertGrid, "칸 삽입(분할)", "Button"))
+                builder.currentMode = BuilderMode.InsertGrid;
             GUILayout.EndHorizontal();
+
+            if (builder.currentMode == BuilderMode.InsertGrid)
+            {
+                GUILayout.Space(10);
+                GUILayout.BeginVertical("helpbox");
+                GUILayout.Label("선택한 타일 기준 분할 삽입 설정", EditorStyles.boldLabel);
+                builder.insertRightAmount = EditorGUILayout.IntField("기준 칸 우측(+X) 삽입 수", builder.insertRightAmount);
+                builder.insertTopAmount = EditorGUILayout.IntField("기준 칸 상단(+Y) 삽입 수", builder.insertTopAmount);
+                EditorGUILayout.HelpBox("씬 뷰(Scene View)에서 특정 타일을 클릭하면, 해당 타일을 기준으로 우측 또는 상단에 지정한 수만큼 공간이 삽입되며 그 밖의 구조물들은 전부 밀려납니다.", MessageType.Info);
+                GUILayout.EndVertical();
+            }
 
             GUILayout.Space(10);
             GUILayout.BeginHorizontal();
@@ -54,6 +73,34 @@ namespace Bathhouse.EditorScripts
                 ResyncAllFacilities(builder);
             }
             GUILayout.EndHorizontal();
+
+            GUILayout.Space(10);
+            GUILayout.Label("맵 영역 자동 조절", EditorStyles.boldLabel);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("중앙 기준 맵 확장 (+2x2)")) builder.ExpandMapCentered();
+            if (GUILayout.Button("중앙 기준 맵 축소 (-2x2)")) builder.ShrinkMapCentered();
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(5);
+            GUILayout.BeginVertical("helpbox");
+            GUILayout.Label("특정 방향(칸) 기준 늘리기/줄이기", EditorStyles.boldLabel);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("상(Top)", GUILayout.Width(40));
+            _expTop = EditorGUILayout.IntField(_expTop, GUILayout.Width(40));
+            GUILayout.Label("하(Bottom)", GUILayout.Width(60));
+            _expBottom = EditorGUILayout.IntField(_expBottom, GUILayout.Width(40));
+            GUILayout.Label("좌(Left)", GUILayout.Width(40));
+            _expLeft = EditorGUILayout.IntField(_expLeft, GUILayout.Width(40));
+            GUILayout.Label("우(Right)", GUILayout.Width(40));
+            _expRight = EditorGUILayout.IntField(_expRight, GUILayout.Width(40));
+            GUILayout.EndHorizontal();
+
+            if (GUILayout.Button("설정한 칸 수만큼 늘리기/줄이기 적용"))
+            {
+                builder.ExpandMapCustom(_expLeft, _expRight, _expTop, _expBottom);
+                _expLeft = 0; _expRight = 0; _expTop = 0; _expBottom = 0; // 초기화
+            }
+            GUILayout.EndVertical();
 
             GUILayout.Space(10);
             GUILayout.Label("설치 가능한 구조물", EditorStyles.boldLabel);
@@ -372,6 +419,28 @@ namespace Bathhouse.EditorScripts
                                 builder.tiles.Add(new GridTileData { x = gridX, y = gridY, isWalkable = setWalkable });
                                 EditorUtility.SetDirty(builder);
                             }
+                            e.Use();
+                        }
+                    }
+                }
+                else if (builder.currentMode == BuilderMode.InsertGrid)
+                {
+                    if (gridX >= 0 && gridX < builder.gridWidth && gridY >= 0 && gridY < builder.gridHeight)
+                    {
+                        // 분할선 시각적 표시
+                        Handles.color = new Color(0f, 1f, 1f, 1f); // 굵은 청록색 선
+                        Vector3 splitOrigin = builder.transform.position + new Vector3((gridX + 1) * builder.nodeSize, (gridY + 1) * builder.nodeSize, 0f);
+                        
+                        if (builder.insertRightAmount != 0)
+                            Handles.DrawLine(splitOrigin - new Vector3(0, builder.gridHeight * builder.nodeSize, 0), splitOrigin + new Vector3(0, builder.gridHeight * builder.nodeSize, 0), 3f);
+                        if (builder.insertTopAmount != 0)
+                            Handles.DrawLine(splitOrigin - new Vector3(builder.gridWidth * builder.nodeSize, 0, 0), splitOrigin + new Vector3(builder.gridWidth * builder.nodeSize, 0, 0), 3f);
+
+                        // 클릭 시 삽입 실행
+                        if (e.type == EventType.MouseDown && e.button == 0)
+                        {
+                            GUIUtility.hotControl = controlID;
+                            builder.InsertGrid(gridX, gridY, builder.insertRightAmount, builder.insertTopAmount);
                             e.Use();
                         }
                     }

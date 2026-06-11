@@ -125,15 +125,14 @@ namespace Bathhouse.Managers
         }
 
         /// <summary>
-        /// Returns the nearest AVAILABLE facility instance of a given type.
+        /// Returns a random AVAILABLE facility instance of a given type.
         /// </summary>
-        public FacilityBase GetNearestAvailableFacility(FacilityType type, Vector3 currentPos, HashSet<FacilityBase> ignoredFacilities = null)
+        public FacilityBase GetRandomAvailableFacility(FacilityType type, HashSet<FacilityBase> ignoredFacilities = null)
         {
             if (!_facilities.ContainsKey(type) || _facilities[type].Count == 0)
                 return null;
 
-            FacilityBase nearest = null;
-            float minDistance = float.MaxValue;
+            List<FacilityBase> availableFacilities = new List<FacilityBase>();
 
             foreach (var fac in _facilities[type])
             {
@@ -143,15 +142,13 @@ namespace Bathhouse.Managers
                 // 꽉 차지 않은 시설만 필터링
                 if (!fac.CanEnter()) continue;
 
-                float dist = Vector3.Distance(currentPos, fac.transform.position);
-                if (dist < minDistance)
-                {
-                    minDistance = dist;
-                    nearest = fac;
-                }
+                availableFacilities.Add(fac);
             }
 
-            return nearest;
+            if (availableFacilities.Count == 0) return null;
+
+            int randomIndex = UnityEngine.Random.Range(0, availableFacilities.Count);
+            return availableFacilities[randomIndex];
         }
     }
 }

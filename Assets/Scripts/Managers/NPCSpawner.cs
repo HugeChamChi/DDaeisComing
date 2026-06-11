@@ -69,7 +69,7 @@ namespace Bathhouse.Managers
                     npc.transform.position = _spawnPosition;
                     npc.gameObject.SetActive(true);
                     // Injecting route profile and pathfinder
-                    npc.Initialize(defaultNpcData, defaultRouteProfile, _pathfindingService, OnNpcExit);
+                    npc.Initialize(defaultNpcData, defaultRouteProfile, _pathfindingService, OnNpcExit, _spawnPosition);
                     
                     _activeNPCs.Add(npc);
 

@@ -193,5 +193,26 @@ namespace Bathhouse.NPC
             _isUsingFacility = false;
             _currentStateName = ""; // Update 루프에서 즉시 Idle/Move 로 복귀됨
         }
+
+        public void ResetAnimation()
+        {
+            _isUsingFacility = false;
+            _currentStateName = "";
+            _lastDirection = Vector2.down; // 기본 방향 아래로
+            
+            if (_animator != null && _animator.gameObject.activeInHierarchy)
+            {
+                _animator.Rebind();
+                _animator.Update(0f);
+            }
+            
+            // 시각적 크기(Flip) 원상복구
+            if (_visualTransform != null)
+            {
+                Vector3 scale = _visualTransform.localScale;
+                scale.x = Mathf.Abs(scale.x);
+                _visualTransform.localScale = scale;
+            }
+        }
     }
 }

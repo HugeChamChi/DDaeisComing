@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Bathhouse.Data
@@ -9,6 +9,7 @@ namespace Bathhouse.Data
         Scrub = 1,
         Towel = 2,
         Platform = 3,
+        TowelReturn = 4,
         // 필요에 따라 추가
     }
 

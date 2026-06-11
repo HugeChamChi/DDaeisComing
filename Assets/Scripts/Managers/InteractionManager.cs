@@ -50,6 +50,34 @@ namespace Bathhouse.Managers
             Debug.Log($"[InteractionManager] 글로벌 만족도 변경: {amount} (현재 총합: {_globalSatisfaction})");
         }
 
+        private void OnEnable()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnNextDayStarted += ResetAllBubbles;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnNextDayStarted -= ResetAllBubbles;
+            }
+        }
+
+        private void ResetAllBubbles()
+        {
+            if (_bubbleCanvas == null) return;
+
+            // 캔버스 하위에 활성화된 모든 말풍선들을 찾아서 풀로 반환
+            var activeBubbles = _bubbleCanvas.GetComponentsInChildren<NPCInteractionSpeechBubbleUI>(false);
+            foreach (var bubble in activeBubbles)
+            {
+                ReturnBubble(bubble);
+            }
+        }
+
         public NPCInteractionSpeechBubbleUI GetBubble(Transform targetTransform, System.Action onClick, InteractionBubbleType type = InteractionBubbleType.Counter)
         {
             if (_speechBubblePrefab == null || _bubbleCanvas == null)

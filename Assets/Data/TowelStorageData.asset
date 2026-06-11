@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db87e6ac333e4d74d88182c39b003566, type: 3}
+  m_Name: TowelStorageData
+  m_EditorClassIdentifier: 
+  towelCountSprites:
+  - {fileID: 21300000, guid: c23ba4ccf5465da4c9d524a821759942, type: 3}
+  - {fileID: 21300000, guid: 7779bd0288ce4f34cbcaeed26b01cf04, type: 3}
+  - {fileID: 21300000, guid: 5b85b8a718c90194c878732854a578d4, type: 3}
+  - {fileID: 21300000, guid: dae18a3ab6733ed4ba81217ae144620a, type: 3}
+  - {fileID: 21300000, guid: d56cd94efee5f8f4e9ea68b034fcc7a5, type: 3}
+  - {fileID: 21300000, guid: 2d43aea4a4e8d3e45b99e4adf542eb59, type: 3}
+  - {fileID: 21300000, guid: a5e7c2e36c2438647b5f120253aa78a6, type: 3}
+  - {fileID: 21300000, guid: 49ad442ba6e92cb4abed7aef874b27a5, type: 3}
+  - {fileID: 21300000, guid: 0486933fcfbd98b42b92733eb8256dfe, type: 3}
+  - {fileID: 21300000, guid: 4800f3b6ecaea2243bc8106cd117a119, type: 3}
+  maxTowelCount: 9

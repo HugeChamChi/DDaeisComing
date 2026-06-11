@@ -52,11 +52,15 @@ namespace Bathhouse.NPC
         }
 
 
-        public virtual void Initialize(NPCData data, NPCRouteProfileSO routeProfile, PathfindingService pathfinder, Action<NPC_Base> onExitCallback)
+        protected Vector3 _spawnPosition;
+
+        public virtual void Initialize(NPCData data, NPCRouteProfileSO routeProfile, PathfindingService pathfinder, Action<NPC_Base> onExitCallback, Vector3 spawnPos = default)
         {
             _data = data;
+            _routeController = new NPCRouteController(routeProfile, this);
             _pathfindingService = pathfinder;
             _onExit = onExitCallback;
+            _spawnPosition = spawnPos;
 
             if (_movement == null)
                 _movement = GetComponent<NPCMovement>();
@@ -69,6 +73,11 @@ namespace Bathhouse.NPC
 
             _movement.Initialize(_data.moveSpeed);
             _routeController.ResetRoute();
+
+            if (_animController != null)
+            {
+                _animController.ResetAnimation();
+            }
 
             DecideNextAction();
         }
@@ -103,8 +112,8 @@ namespace Bathhouse.NPC
         /// </summary>
         protected virtual void MoveToTargetFacility(FacilityType type)
         {
-            // 가장 가깝고 "자리가 비어있는" 시설 찾기
-            _targetFacility = GameManager.Facility.GetNearestAvailableFacility(type, transform.position, _unreachableFacilities);
+            // 랜덤으로 "자리가 비어있는" 시설 찾기
+            _targetFacility = GameManager.Facility.GetRandomAvailableFacility(type, _unreachableFacilities);
 
             if (_targetFacility == null)
             {
@@ -279,6 +288,19 @@ namespace Bathhouse.NPC
 
         protected virtual void ExitBathhouse()
         {
+            if (_movement != null && _pathfindingService != null)
+            {
+                var validPath = _pathfindingService.FindPath(transform.position, _spawnPosition);
+                if (validPath != null && validPath.Count > 0)
+                {
+                    _movement.MoveAlongPath(validPath, () => 
+                    {
+                        _onExit?.Invoke(this);
+                    });
+                    return;
+                }
+            }
+            // 길을 못 찾거나 Movement가 없으면 즉시 퇴장
             _onExit?.Invoke(this);
         }
 

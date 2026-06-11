@@ -19,6 +19,9 @@ namespace Bathhouse.Facilities
         [Tooltip("쓰레기통 상단 World Canvas의 게이지 Slider")]
         [SerializeField] private Slider gaugeSlider;
 
+        [Tooltip("쓰레기통 전체를 덮는 투명 버튼 (클릭 영역 RectTransform)")]
+        [SerializeField] private Button clickButton;
+
         private void Start()
         {
             if (trashBinData == null)
@@ -28,7 +31,6 @@ namespace Bathhouse.Facilities
             
             if (gaugeSlider != null)
             {
-                // 사용자가 슬라이더를 조작하지 못하도록 비활성화
                 gaugeSlider.interactable = false;
                 if (trashBinData != null)
                 {
@@ -36,14 +38,31 @@ namespace Bathhouse.Facilities
                 }
             }
             
+            if (clickButton != null)
+            {
+                clickButton.onClick.AddListener(TriggerMinigame);
+            }
+
             UpdateUI();
+
+            if (MiniGameManager.Instance != null && Bathhouse.Managers.GameManager.Instance != null)
+            {
+                Bathhouse.Managers.GameManager.Instance.OnNextDayStarted += ReduceGauge;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (Bathhouse.Managers.GameManager.Instance != null)
+            {
+                Bathhouse.Managers.GameManager.Instance.OnNextDayStarted -= ReduceGauge;
+            }
         }
 
         public override void ExitFacility(NPC_Base npc, int slotIndex)
         {
             base.ExitFacility(npc, slotIndex);
 
-            // NPC가 이용을 마칠 때마다 쓰레기(게이지) 증가
             if (trashBinData != null)
             {
                 state.currentGauge += trashBinData.increaseAmountPerUse;
@@ -62,6 +81,12 @@ namespace Bathhouse.Facilities
         }
 
         public void OnPointerClick(PointerEventData eventData)
+        {
+            // UI를 클릭했을 때 실행됨
+            TriggerMinigame();
+        }
+
+        private void TriggerMinigame()
         {
             if (state.isMinigamePlaying) return;
             if (state.currentGauge <= 0) return; // 치울 쓰레기가 없으면 상호작용 안 함

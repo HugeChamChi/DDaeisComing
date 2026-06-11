@@ -12,6 +12,16 @@ namespace Bathhouse.Managers
         public ScrubMiniGameUI scrubMiniGame;
         public TrashMiniGameUI trashMiniGame;
 
+        public bool IsAnyMiniGamePlaying
+        {
+            get
+            {
+                bool scrubPlaying = scrubMiniGame != null && scrubMiniGame.gamePanel != null && scrubMiniGame.gamePanel.activeInHierarchy;
+                bool trashPlaying = trashMiniGame != null && trashMiniGame.gamePanel != null && trashMiniGame.gamePanel.activeInHierarchy;
+                return scrubPlaying || trashPlaying;
+            }
+        }
+
         [Header("Test Settings")]
         public int testDay = 1;
 
@@ -45,13 +55,13 @@ namespace Bathhouse.Managers
 
         public void ForceStopAllGames()
         {
-            if (scrubMiniGame != null && scrubMiniGame.gameObject.activeInHierarchy)
+            if (scrubMiniGame != null && scrubMiniGame.gamePanel != null && scrubMiniGame.gamePanel.activeInHierarchy)
             {
-                scrubMiniGame.gameObject.SetActive(false);
+                scrubMiniGame.gamePanel.SetActive(false);
             }
-            if (trashMiniGame != null && trashMiniGame.gameObject.activeInHierarchy)
+            if (trashMiniGame != null && trashMiniGame.gamePanel != null && trashMiniGame.gamePanel.activeInHierarchy)
             {
-                trashMiniGame.gameObject.SetActive(false);
+                trashMiniGame.gamePanel.SetActive(false);
             }
         }
 

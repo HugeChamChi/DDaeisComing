@@ -113,8 +113,8 @@ namespace Bathhouse.NPC
             switch (facility)
             {
                 case FacilityType.Counter: return InteractionBubbleType.Counter;
-                case FacilityType.TowelStorage:
-                case FacilityType.TowelReturn: return InteractionBubbleType.Towel;
+                case FacilityType.TowelStorage: return InteractionBubbleType.Towel;
+                case FacilityType.TowelReturn: return InteractionBubbleType.TowelReturn;
                 case FacilityType.Platform: return InteractionBubbleType.Platform;
                 default: return InteractionBubbleType.Counter; // 기본값
             }

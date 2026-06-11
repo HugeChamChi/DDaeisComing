@@ -13,17 +13,20 @@ namespace Bathhouse.NPC
         private readonly NPCRouteProfileSO _routeProfile;
         private readonly NPC_Base _npcBase;
         private int _currentStepIndex = 0;
+        private FacilityType _lastDeterminedFacility = FacilityType.None;
 
         public NPCRouteController(NPCRouteProfileSO routeProfile, NPC_Base npcBase)
         {
             _routeProfile = routeProfile;
             _npcBase = npcBase;
             _currentStepIndex = 0;
+            _lastDeterminedFacility = FacilityType.None;
         }
 
         public void ResetRoute()
         {
             _currentStepIndex = 0;
+            _lastDeterminedFacility = FacilityType.None;
         }
 
         /// <summary>
@@ -42,10 +45,17 @@ namespace Bathhouse.NPC
 
                 if (step.isMandatory)
                 {
+                    _lastDeterminedFacility = step.structureType;
                     return step.structureType;
                 }
                 else
                 {
+                    if (step.structureType == FacilityType.ScrubArea && _lastDeterminedFacility != FacilityType.Bath)
+                    {
+                        Debug.Log($"<color=#FFA500>[동선 규칙]</color> {_npcBase.Data.name} - Bath를 거치지 않아서 <b>{step.structureType}</b> 패스함.");
+                        continue;
+                    }
+
                     float satisfactionBonus = _npcBase.CurrentSatisfaction * _npcBase.Data.satisfactionProbabilityWeight; 
                     float finalProbability = step.baseProbability + satisfactionBonus;
                     float diceRoll = Random.Range(0f, 1f);
@@ -53,6 +63,7 @@ namespace Bathhouse.NPC
                     if (diceRoll <= finalProbability)
                     {
                         Debug.Log($"<color=#00FFFF>[동선 확률]</color> {_npcBase.Data.name} - {finalProbability * 100f:F1}% 확률로 <b>{step.structureType}</b> 이용 결정! (주사위 결과: {diceRoll * 100f:F1}%)");
+                        _lastDeterminedFacility = step.structureType;
                         return step.structureType;
                     }
                     else

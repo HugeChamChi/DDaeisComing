@@ -15,7 +15,7 @@ MonoBehaviour:
   facilityType: 6
   facilityName: "\uD0C0\uC6D4 \uC218\uAC70\uD568"
   width: 2
-  height: 2
+  height: 4
   interactionOffsets:
   - {x: 3, y: 0}
   maxCapacity: 1

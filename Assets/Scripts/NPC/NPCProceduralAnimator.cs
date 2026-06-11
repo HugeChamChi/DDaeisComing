@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Bathhouse.NPC.Animations;
 
 namespace Bathhouse.NPC
@@ -70,7 +70,9 @@ namespace Bathhouse.NPC
             if (_currentAnimation != null && _visualTransform != null)
             {
                 _currentAnimation.StopAnimation(_visualTransform, _baseScale);
+                _currentAnimation = null;
             }
+            _currentState = ProceduralState.None;
         }
     }
 }
