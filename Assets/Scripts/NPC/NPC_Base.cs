@@ -231,6 +231,7 @@ namespace Bathhouse.NPC
 
             // 상호작용 지점(O 마커) 저장
             Vector3 interactionPos = transform.position;
+            Quaternion originalRotation = transform.rotation;
             var depthSorter = GetComponentInChildren<Bathhouse.Tools.DynamicDepthSorter>();
 
             // 구조물 이용 시 무조건 구조물보다 높은 정렬(Order) 값을 갖도록 강제
@@ -241,7 +242,9 @@ namespace Bathhouse.NPC
             {
                 // 머무는 자리(U 마커)로 이동 (구조물 내부)
                 Vector3 usagePos = facility.GetUsageWorldPosition(slot);
+                Quaternion usageRot = facility.GetUsageRotation(slot);
                 transform.position = usagePos;
+                transform.rotation = usageRot;
             }
 
             // Progress 루프 (매 프레임 호출)
@@ -269,8 +272,9 @@ namespace Bathhouse.NPC
 
             if (facility.TeleportToSlotOnUse)
             {
-                // 사용이 끝나면 구조물 내부(Slot)에서 다시 상호작용 노드 위치(밖)로 텔레포트 복귀
+                // 사용이 끝나면 구조물 내부(Slot)에서 다시 상호작용 노드 위치(밖)로 텔레포트 및 회전 복귀
                 transform.position = interactionPos;
+                transform.rotation = originalRotation;
             }
 
             // 동적 정렬 다시 켜기

@@ -247,6 +247,19 @@ namespace Bathhouse.Facilities
             return transform.position;
         }
 
+        public Quaternion GetUsageRotation(int slotIndex)
+        {
+            if (!useRandomArea && slots != null && slots.Count > 0)
+            {
+                int visualSlotIndex = allowSharedSlots ? (slotIndex % slots.Count) : slotIndex;
+                if (visualSlotIndex >= 0 && visualSlotIndex < slots.Count)
+                {
+                    return slots[visualSlotIndex].rotation;
+                }
+            }
+            return Quaternion.identity;
+        }
+
         /// <summary>
         /// NPC가 시설 사용을 시작할 때 호출됩니다.
         /// </summary>

@@ -1,4 +1,4 @@
-﻿using Bathhouse.Managers;
+using Bathhouse.Managers;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -90,7 +90,7 @@ namespace Bathhouse.UI
 
         private void LateUpdate()
         {
-            if (_targetTransform != null)
+            if (_targetTransform != null && _isInteractable)
             {
                 Canvas canvas = GetComponentInParent<Canvas>();
                 if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)

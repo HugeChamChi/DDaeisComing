@@ -1,4 +1,4 @@
-﻿namespace Bathhouse.Facilities
+namespace Bathhouse.Facilities
 {
     public interface IFacility
     {
@@ -24,6 +24,7 @@
         float GetUsageTime();
         Data.FacilityType GetFacilityType();
         UnityEngine.Vector3 GetUsageWorldPosition(int slotIndex);
+        UnityEngine.Quaternion GetUsageRotation(int slotIndex);
 
         void EnterFacility(NPC.NPC_Base npc, int slotIndex);
         
