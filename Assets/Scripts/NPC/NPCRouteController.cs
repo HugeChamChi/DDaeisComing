@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Bathhouse.Data;
 // using Cysharp.Threading.Tasks; // 선호 기술 스택
 
@@ -14,7 +14,6 @@ namespace Bathhouse.NPC
         private readonly NPC_Base _npcBase;
         private int _currentStepIndex = 0;
 
-        // [Inject] VContainer를 사용한다면 생성자 주입 활용
         public NPCRouteController(NPCRouteProfileSO routeProfile, NPC_Base npcBase)
         {
             _routeProfile = routeProfile;

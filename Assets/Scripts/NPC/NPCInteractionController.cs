@@ -4,8 +4,7 @@ using Bathhouse.Managers;
 using System;
 using System.Threading;
 using UnityEngine;
-using Bathhouse.Data;
-// using VContainer; // DI
+// DI no longer used
 
 namespace Bathhouse.NPC
 {

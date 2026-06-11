@@ -64,14 +64,14 @@ namespace Bathhouse.UI
                 popupAnim.PlayIn().Forget();
             }
 
-            var dailyRecord = GameManager.Data.DailyRecord;
-            var incomeDataSO = GameManager.Data.IncomeDataSO;
+            var dailyRecord = global::GlobalManagers.Data.DailyRecord;
+            var incomeDataSO = global::GlobalManagers.Data.IncomeDataSO;
 
             if (dailyRecord == null) return;
 
             if (txtDay != null)
             {
-                int currentDay = GameManager.Data.Current != null ? GameManager.Data.Current.currentDay : 1;
+                int currentDay = global::GlobalManagers.Data.Current != null ? global::GlobalManagers.Data.Current.currentDay : 1;
                 txtDay.text = $"{currentDay}일째";
             }
 

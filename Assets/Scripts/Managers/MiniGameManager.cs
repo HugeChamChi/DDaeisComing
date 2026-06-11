@@ -94,9 +94,9 @@ namespace Bathhouse.Managers
             if (trashMiniGame != null)
             {
                 int dayToUse = testDay;
-                if (GameManager.Data != null && GameManager.Data.Current != null)
+                if (global::GlobalManagers.Data != null && global::GlobalManagers.Data.Current != null)
                 {
-                    dayToUse = GameManager.Data.Current.currentDay;
+                    dayToUse = global::GlobalManagers.Data.Current.currentDay;
                 }
 
                 // 현재 게이지 수치만큼 쓰레기가 나오도록 설정

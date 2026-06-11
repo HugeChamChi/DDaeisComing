@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Bathhouse.Data;
 using Bathhouse.Pathfinding;
-using Bathhouse.Managers;
 using System;
 using Cysharp.Threading.Tasks;
 using System.Threading;
@@ -212,7 +211,7 @@ namespace Bathhouse.NPC
             // 상호작용 UI(말풍선) 시작 (비동기 병렬 실행)
             if (_interactionController != null)
             {
-                _interactionController.StartInteractionAsync(type, waitTime);
+                _interactionController.StartInteractionAsync(type, waitTime).Forget();
             }
 
             // 상호작용 애니메이션 실행

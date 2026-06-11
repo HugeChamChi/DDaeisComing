@@ -1,8 +1,7 @@
-﻿using Bathhouse.UI;
+using Bathhouse.UI;
 using Bathhouse.Data;
 using System.Collections.Generic;
 using UnityEngine;
-using Bathhouse.Data;
 using Bathhouse.Utils;
 
 namespace Bathhouse.Managers

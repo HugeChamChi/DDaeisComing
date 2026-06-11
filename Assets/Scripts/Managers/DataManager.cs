@@ -1,5 +1,7 @@
 using UnityEngine;
 using Bathhouse.Data;
+using Bathhouse.Save;
+using Cysharp.Threading.Tasks;
 
 namespace Bathhouse.Managers
 {
@@ -7,7 +9,7 @@ namespace Bathhouse.Managers
     /// 게임 내 핵심 진행 데이터(GameData)의 상태를 들고 있는 매니저입니다.
     /// 데이터 로드, 저장, 리셋 등의 기능을 수행합니다.
     /// </summary>
-    public class DataManager : MonoBehaviour
+    public class DataManager : MonoBehaviour, ISavable
     {
         public GameData Current { get; private set; }
         public DailyRecordModel DailyRecord { get; private set; }
@@ -41,21 +43,30 @@ namespace Bathhouse.Managers
             {
                 IncomeDataSO.Initialize();
             }
-            if (GameManager.Save != null)
-            {
-                Current = GameManager.Save.LoadGame();
-            }
-            else
+            if (Current == null)
             {
                 Current = new GameData();
             }
         }
 
+        public void LoadData(GameData data)
+        {
+            Current = data;
+        }
+
+        public void SaveData(ref GameData data)
+        {
+            if (Current != null)
+            {
+                data = Current;
+            }
+        }
+
         public void SaveData()
         {
-            if (GameManager.Save != null && Current != null)
+            if (global::GlobalManagers.Save != null)
             {
-                GameManager.Save.SaveGame(Current);
+                global::GlobalManagers.Save.SaveGameAsync().Forget();
             }
         }
 

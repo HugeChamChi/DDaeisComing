@@ -305,12 +305,12 @@ namespace Bathhouse.Facilities
             }
 
             // 통계 및 수익 반영
-            if (_data != null && Managers.GameManager.Data != null && Managers.GameManager.Data.DailyRecord != null)
+            if (_data != null && global::GlobalManagers.Data != null && global::GlobalManagers.Data.DailyRecord != null)
             {
-                var dailyRecord = Managers.GameManager.Data.DailyRecord;
+                var dailyRecord = global::GlobalManagers.Data.DailyRecord;
                 dailyRecord.AddFacilityUsage(_data.facilityType);
                 
-                var incomeDataSO = Managers.GameManager.Data.IncomeDataSO;
+                var incomeDataSO = global::GlobalManagers.Data.IncomeDataSO;
                 if (incomeDataSO != null)
                 {
                     int income = incomeDataSO.GetIncomeData(_data.facilityType).incomeAmount;

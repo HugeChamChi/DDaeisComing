@@ -73,9 +73,9 @@ namespace Bathhouse.Managers
                     
                     _activeNPCs.Add(npc);
 
-                    if (GameManager.Data != null && GameManager.Data.DailyRecord != null)
+                    if (global::GlobalManagers.Data != null && global::GlobalManagers.Data.DailyRecord != null)
                     {
-                        GameManager.Data.DailyRecord.AddVisit();
+                        global::GlobalManagers.Data.DailyRecord.AddVisit();
                     }
                 },
                 actionOnRelease: (npc) => 

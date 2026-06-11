@@ -37,7 +37,7 @@ namespace GaeGGUL.Animation
 
             if (isLoop)
             {
-                _currentSeq.SetLoops(-1, LoopType.Restart);
+                _ = _currentSeq.SetLoops(-1, LoopType.Restart);
             }
 
             await _currentSeq.Play().ToUniTask();

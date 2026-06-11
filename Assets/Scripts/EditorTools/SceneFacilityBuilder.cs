@@ -1,7 +1,6 @@
-﻿using Bathhouse.Data;
+using Bathhouse.Data;
 using UnityEngine;
 using System.Collections.Generic;
-using Bathhouse.Data;
 
 namespace Bathhouse.Tools
 {
