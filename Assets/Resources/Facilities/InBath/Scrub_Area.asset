@@ -17,7 +17,8 @@ MonoBehaviour:
   width: 10
   height: 6
   interactionOffsets:
-  - {x: 4, y: -1}
+  - {x: -2, y: 2}
+  - {x: -2, y: 3}
   maxCapacity: 1
   baseUseTime: 2
   usageCooldown: 0
@@ -25,5 +26,5 @@ MonoBehaviour:
   cleanlinessDropPerUse: 5
   visualPrefab: {fileID: 2783644997720154662, guid: 086b7f865fed00f4a8f2a4d803a71df5,
     type: 3}
-  visualPosOffset: {x: 0, y: -0.1, z: 0}
-  visualScaleOffset: {x: 2, y: 2.5, z: 1}
+  visualPosOffset: {x: 0, y: 0, z: 0}
+  visualScaleOffset: {x: 2.5, y: 2.5, z: 1}

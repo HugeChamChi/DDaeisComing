@@ -10,29 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24432e3d967c5754c9f931fff426fdc8, type: 3}
-  m_Name: Bath_Cold
+  m_Name: Shower_Station
   m_EditorClassIdentifier: 
-  facilityType: 11
-  facilityName: "\uB0C9\uD0D5"
-  width: 14
-  height: 10
+  facilityType: 9
+  facilityName: "\uC88C\uC2DD \uC0E4\uC6CC\uB300"
+  width: 6
+  height: 2
   interactionOffsets:
-  - {x: 6, y: -2}
-  - {x: 7, y: -2}
-  - {x: 8, y: -2}
-  - {x: 9, y: -2}
-  - {x: 10, y: -2}
-  - {x: 6, y: -1}
-  - {x: 7, y: -1}
-  - {x: 8, y: -1}
-  - {x: 10, y: -1}
-  - {x: 9, y: -1}
-  maxCapacity: 5
+  - {x: 3, y: -2}
+  maxCapacity: 1
   baseUseTime: 2
   usageCooldown: 0
   cost: 100
   cleanlinessDropPerUse: 5
-  visualPrefab: {fileID: 2783644997720154662, guid: 9ec9520f571985a4ab93a3ce41175858,
+  visualPrefab: {fileID: 2783644997720154662, guid: ed6c9d30dbe4f1f42a71fa7272e8e066,
     type: 3}
-  visualPosOffset: {x: 0.4, y: 1.5, z: 0}
-  visualScaleOffset: {x: 2.3, y: 2.3, z: 1}
+  visualPosOffset: {x: 0, y: 1.5, z: 0}
+  visualScaleOffset: {x: 2, y: 2, z: 1}

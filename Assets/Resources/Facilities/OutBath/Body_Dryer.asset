@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   facilityType: 7
   facilityName: "\uBC14\uB514 \uB4DC\uB77C\uC774\uC5B4"
-  width: 2
-  height: 2
+  width: 3
+  height: 3
   interactionOffsets:
   - {x: -1, y: 0}
   maxCapacity: 1
@@ -26,4 +26,4 @@ MonoBehaviour:
   visualPrefab: {fileID: 2783644997720154662, guid: 898bd45b68dd73949b63a7c3a3d78f08,
     type: 3}
   visualPosOffset: {x: 0, y: 0, z: 0}
-  visualScaleOffset: {x: 1, y: 1, z: 1}
+  visualScaleOffset: {x: 1.5, y: 1.5, z: 1}

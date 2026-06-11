@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Chick_Idle_LeftRight
+  m_Name: Chick_Action_Bath
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -21,7 +21,7 @@ AnimationClip:
   - serializedVersion: 2
     curve:
     - time: 0
-      value: {fileID: 238592558, guid: fef34a021efcf5b40aad667741676774, type: 3}
+      value: {fileID: 531702155, guid: fef34a021efcf5b40aad667741676774, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -44,7 +44,7 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
-    - {fileID: 238592558, guid: fef34a021efcf5b40aad667741676774, type: 3}
+    - {fileID: 531702155, guid: fef34a021efcf5b40aad667741676774, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}

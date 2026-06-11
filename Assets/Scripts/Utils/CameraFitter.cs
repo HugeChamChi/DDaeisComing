@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Bathhouse.Utils
 {
@@ -30,8 +30,8 @@ namespace Bathhouse.Utils
         private float CurrentNodeSize => mapConfig != null ? mapConfig.nodeSize : fallbackNodeSize;
 
         [Header("Camera Settings")]
-        [Tooltip("화면 가장자리 여백 (1.1 = 10% 여백)")]
-        public float paddingMultiplier = 1.1f;
+        [Tooltip("맵 가장자리 여백 (단위: Unity Unit, X: 가로 여백, Y: 세로 여백)")]
+        public Vector2 padding = new Vector2(1f, 1f);
         
         [Tooltip("체크하면 Update 주기마다 계속 화면에 맞춥니다. 해상도 변경 대응용입니다.")]
         public bool fitEveryFrame = false;
@@ -81,20 +81,11 @@ namespace Bathhouse.Utils
             // 만약 0이거나 비정상적일 경우 방어코드
             if (screenRatio <= 0) screenRatio = 16f / 9f;
 
-            float targetRatio = mapWorldWidth / mapWorldHeight;
-
-            // 4. 비율에 따라 Orthographic Size 조절
-            if (screenRatio >= targetRatio)
-            {
-                // 화면 가로가 충분히 넓을 경우, 세로(Height)를 기준으로 맞춤
-                _cam.orthographicSize = (mapWorldHeight / 2f) * paddingMultiplier;
-            }
-            else
-            {
-                // 화면 가로가 좁을 경우(세로로 긴 화면 등), 가로(Width)가 짤리지 않게 Size를 더 키움
-                float sizeDifference = targetRatio / screenRatio;
-                _cam.orthographicSize = (mapWorldHeight / 2f) * sizeDifference * paddingMultiplier;
-            }
+            // 4. 맵 전체가 화면에 보이도록 Orthographic Size 조절 (가로/세로 중 더 큰 쪽에 맞춤)
+            float sizeForWidth = (mapWorldWidth / 2f + padding.x) / screenRatio;
+            float sizeForHeight = (mapWorldHeight / 2f + padding.y);
+            
+            _cam.orthographicSize = Mathf.Max(sizeForWidth, sizeForHeight);
         }
 
         /// <summary>

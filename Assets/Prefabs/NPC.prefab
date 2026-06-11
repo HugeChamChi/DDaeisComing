@@ -102,9 +102,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86b16de23c649274594fa4332e9d5f07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rewardData: {fileID: 11400000, guid: 4b05f8b608e94aa42965f40c09bfbb3e, type: 2}
   _npcBase: {fileID: 2198108443880995478}
-  _speechBubbleUI: {fileID: 0}
 --- !u!1 &4479309985216374447
 GameObject:
   m_ObjectHideFlags: 0
@@ -180,12 +178,12 @@ SpriteRenderer:
   m_SortingLayerID: 991944485
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1426269122, guid: d9de4553ec8a64747a687418d503e0cd, type: 3}
+  m_Sprite: {fileID: 1727677709, guid: fef34a021efcf5b40aad667741676774, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 2.56, y: 2.56}
+  m_Size: {x: 1.3100001, y: 1.4650002}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

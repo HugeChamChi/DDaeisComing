@@ -161,6 +161,15 @@ namespace Bathhouse.NPC
                 }
                 _currentStateName = actionName;
             }
+            else if (facilityType == FacilityType.Bath)
+            {
+                string actionName = "Action_Bath";
+                if (_animator != null)
+                {
+                    _animator.Play(actionName);
+                }
+                _currentStateName = actionName;
+            }
             else
             {
                 // 플랫폼이 아닌 경우 방향에 맞는 Idle 모션 재생

@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24432e3d967c5754c9f931fff426fdc8, type: 3}
-  m_Name: Scrub_Area_Station
+  m_Name: Shower_Booth_Wall
   m_EditorClassIdentifier: 
   facilityType: 9
-  facilityName: "\uC88C\uC2DD \uC0E4\uC6CC\uB300"
-  width: 5
+  facilityName: "\uBCBD\uC774 \uC788\uB294 \uC0E4\uC6CC\uC2E4 \uBD80\uC2A4"
+  width: 6
   height: 2
   interactionOffsets:
-  - {x: 2, y: -1}
+  - {x: 3, y: -2}
   maxCapacity: 1
   baseUseTime: 2
   usageCooldown: 0
   cost: 100
   cleanlinessDropPerUse: 5
-  visualPrefab: {fileID: 2783644997720154662, guid: ed6c9d30dbe4f1f42a71fa7272e8e066,
+  visualPrefab: {fileID: 2783644997720154662, guid: 330d6af275e79ea4b9f4e6c21e55f9ef,
     type: 3}
-  visualPosOffset: {x: 0, y: 0.48, z: 0}
-  visualScaleOffset: {x: 1.25, y: 1.25, z: 1}
+  visualPosOffset: {x: 0, y: 1.5, z: 0}
+  visualScaleOffset: {x: 2, y: 2, z: 1}

@@ -15,7 +15,7 @@ MonoBehaviour:
   facilityType: 5
   facilityName: "\uD0C0\uC6D4 \uBCF4\uAD00\uD568"
   width: 4
-  height: 4
+  height: 3
   interactionOffsets:
   - {x: -2, y: 1}
   maxCapacity: 1
@@ -25,5 +25,5 @@ MonoBehaviour:
   cleanlinessDropPerUse: 5
   visualPrefab: {fileID: 2783644997720154662, guid: aee149c74b13717488f0af3c30e50184,
     type: 3}
-  visualPosOffset: {x: 0, y: 0, z: 0}
+  visualPosOffset: {x: 0, y: 0.25, z: 0}
   visualScaleOffset: {x: 1.67, y: 1.67, z: 1}

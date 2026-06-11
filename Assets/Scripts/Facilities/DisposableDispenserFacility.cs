@@ -1,9 +1,16 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Bathhouse.Facilities
 {
     public class DisposableDispenserFacility : FacilityBase
     {
+        protected override void Awake()
+        {
+            base.Awake();
+            // 구조물 내부 슬롯으로 텔레포트 하지 않고 제자리에서 상호작용하도록 설정
+            teleportToSlotOnUse = false;
+        }
+
         public override void EnterFacility(NPC.NPC_Base npc, int slotIndex)
         {
             base.EnterFacility(npc, slotIndex);
