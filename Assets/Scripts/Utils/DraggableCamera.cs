@@ -1,3 +1,4 @@
+using Bathhouse.Managers;
 using UnityEngine;
 
 namespace Bathhouse.Utils
@@ -12,7 +13,7 @@ namespace Bathhouse.Utils
     public class DraggableCamera : MonoBehaviour
     {
         private Camera _cam;
-
+        
         [Header("Map Settings")]
         [Tooltip("공통 맵 설정을 할당하면, 이 값을 추적하여 맵 경계를 설정합니다.")]
         public Data.MapConfig mapConfig;
@@ -89,7 +90,7 @@ namespace Bathhouse.Utils
             if (Application.isPlaying)
             {
                 // 미니게임 진행 중에는 카메라 조작 블록
-                if (Bathhouse.Managers.MiniGameManager.Instance != null && Bathhouse.Managers.MiniGameManager.Instance.IsAnyMiniGamePlaying)
+                if (Bathhouse.Managers.GameManager.MiniGame != null && Bathhouse.Managers.GameManager.MiniGame.IsAnyMiniGamePlaying)
                 {
                     return;
                 }

@@ -10,6 +10,7 @@ namespace Bathhouse.Data
         Towel = 2,
         Platform = 3,
         TowelReturn = 4,
+        ShowerTidyUp = 5,
         // 필요에 따라 추가
     }
 

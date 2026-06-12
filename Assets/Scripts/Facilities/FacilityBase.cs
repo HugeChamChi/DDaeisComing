@@ -247,6 +247,19 @@ namespace Bathhouse.Facilities
             return transform.position;
         }
 
+        public Quaternion GetUsageRotation(int slotIndex)
+        {
+            if (!useRandomArea && slots != null && slots.Count > 0)
+            {
+                int visualSlotIndex = allowSharedSlots ? (slotIndex % slots.Count) : slotIndex;
+                if (visualSlotIndex >= 0 && visualSlotIndex < slots.Count)
+                {
+                    return slots[visualSlotIndex].rotation;
+                }
+            }
+            return Quaternion.identity;
+        }
+
         /// <summary>
         /// NPC가 시설 사용을 시작할 때 호출됩니다.
         /// </summary>
@@ -304,7 +317,16 @@ namespace Bathhouse.Facilities
                 animController.StopFacilityAction();
             }
 
-            // 통계 및 수익 반영
+            // 통계 및 수익 반영은 기본적으로 RecordUsageAndIncome()을 통해 처리합니다.
+            // 하위 클래스에서 상호작용 성공 여부에 따라 다르게 처리하려면 이 메서드를 오버라이드합니다.
+            RecordUsageAndIncome(npc);
+        }
+
+        /// <summary>
+        /// 시설 사용 완료 시 통계(이용 횟수) 및 수익을 반영합니다.
+        /// </summary>
+        protected virtual void RecordUsageAndIncome(NPC.NPC_Base npc = null)
+        {
             if (_data != null && global::GlobalManagers.Data != null && global::GlobalManagers.Data.DailyRecord != null)
             {
                 var dailyRecord = global::GlobalManagers.Data.DailyRecord;

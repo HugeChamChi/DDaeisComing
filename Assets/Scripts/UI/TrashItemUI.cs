@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace Bathhouse.MiniGames
 {
@@ -10,10 +11,13 @@ namespace Bathhouse.MiniGames
         private CanvasGroup _canvasGroup;
         private Vector2 _originalPosition;
         private Canvas _parentCanvas;
+        private Image _image;
+        [SerializeField] private Sprite[] trashSprites; // 쓰레기 아이템별 스프라이트 배열
 
         private void Awake()
         {
             _rectTransform = GetComponent<RectTransform>();
+            _image = GetComponent<Image>();
             _canvasGroup = GetComponent<CanvasGroup>();
             if (_canvasGroup == null)
             {
@@ -31,6 +35,16 @@ namespace Bathhouse.MiniGames
             _gameController = gameController;
             // 캔버스 강제 업데이트 이후 포지션을 가져오는 것이 안전하지만 Awake/Spawn 직후이므로 anchoredPosition을 캐싱
             _originalPosition = _rectTransform.anchoredPosition;
+            RandomSprites();
+        }
+
+        private void RandomSprites()
+        {
+            if (trashSprites != null && trashSprites.Length > 0 && _image != null)
+            {
+                int randomIndex = Random.Range(0, trashSprites.Length);
+                _image.sprite = trashSprites[randomIndex];
+            }
         }
 
         public void OnBeginDrag(PointerEventData eventData)

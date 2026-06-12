@@ -1,9 +1,20 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Bathhouse.Facilities
 {
     public class ShowerFacility : FacilityBase
     {
+        public event System.Action OnShowerUsed;
+
+        protected override void Awake()
+        {
+            base.Awake();
+            if (gameObject.GetComponent<TidyUpInteractionTrigger>() == null)
+            {
+                gameObject.AddComponent<TidyUpInteractionTrigger>();
+            }
+        }
+
         public override void EnterFacility(NPC.NPC_Base npc, int slotIndex)
         {
             base.EnterFacility(npc, slotIndex);
@@ -17,6 +28,7 @@ namespace Bathhouse.Facilities
             // npc.Brain.hasShowered = true; (신규 라우트 시스템에서는 불필요)
             // npc.Brain.bathCount++;
             Debug.Log($"[Shower] NPC 샤워 완료.");
+            OnShowerUsed?.Invoke();
         }
 
         public override void ProgressFacility(NPC.NPC_Base npc, int slotIndex, float deltaTime)

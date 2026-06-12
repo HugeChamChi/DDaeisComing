@@ -19,7 +19,7 @@ MonoBehaviour:
   interactionOffsets:
   - {x: 2, y: -2}
   maxCapacity: 1
-  baseUseTime: 2
+  baseUseTime: 3
   usageCooldown: 0
   cost: 100
   cleanlinessDropPerUse: 5

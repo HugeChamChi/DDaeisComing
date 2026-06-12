@@ -58,9 +58,64 @@ namespace Bathhouse.MiniGames
                 
                 // 랜덤 위치 설정 (trashSpawnArea 내부)
                 RectTransform rt = trashObj.GetComponent<RectTransform>();
-                float x = UnityEngine.Random.Range(trashSpawnArea.rect.xMin, trashSpawnArea.rect.xMax);
-                float y = UnityEngine.Random.Range(trashSpawnArea.rect.yMin, trashSpawnArea.rect.yMax);
-                rt.anchoredPosition = new Vector2(x, y);
+
+                Camera raycastCamera = null; 
+                Canvas parentCanvas = GetComponentInParent<Canvas>();
+                if (parentCanvas != null && parentCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                {
+                    raycastCamera = parentCanvas.worldCamera;
+                }
+
+                Vector2 validPos = Vector2.zero;
+                bool positionFound = false;
+                int maxAttempts = 50;
+
+                for (int attempt = 0; attempt < maxAttempts; attempt++)
+                {
+                    float x = UnityEngine.Random.Range(trashSpawnArea.rect.xMin, trashSpawnArea.rect.xMax);
+                    float y = UnityEngine.Random.Range(trashSpawnArea.rect.yMin, trashSpawnArea.rect.yMax);
+                    Vector2 candidatePos = new Vector2(x, y);
+
+                    // 스크린 좌표로 변환하여 쓰레기통 렉트와 겹치는지 확인
+                    Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(raycastCamera, trashSpawnArea.TransformPoint(candidatePos));
+                    
+                    if (RectTransformUtility.RectangleContainsScreenPoint(trashCanRect, screenPos, raycastCamera))
+                    {
+                        continue; // 쓰레기통과 겹치면 다시
+                    }
+
+                    // 다른 쓰레기와 겹치는지 확인 (기준 거리: 100 픽셀)
+                    bool overlapsOtherTrash = false;
+                    foreach (var existingTrash in _activeTrashes)
+                    {
+                        RectTransform existingRt = existingTrash.GetComponent<RectTransform>();
+                        if (Vector2.Distance(existingRt.anchoredPosition, candidatePos) < 100f)
+                        {
+                            overlapsOtherTrash = true;
+                            break;
+                        }
+                    }
+
+                    if (overlapsOtherTrash)
+                    {
+                        continue;
+                    }
+
+                    validPos = candidatePos;
+                    positionFound = true;
+                    break;
+                }
+
+                if (!positionFound)
+                {
+                    // 최후의 수단으로 대충 겹치더라도 배치
+                    validPos = new Vector2(
+                        UnityEngine.Random.Range(trashSpawnArea.rect.xMin, trashSpawnArea.rect.xMax),
+                        UnityEngine.Random.Range(trashSpawnArea.rect.yMin, trashSpawnArea.rect.yMax)
+                    );
+                }
+
+                rt.anchoredPosition = validPos;
 
                 TrashItemUI trashUI = trashObj.GetComponent<TrashItemUI>();
                 if (trashUI != null)

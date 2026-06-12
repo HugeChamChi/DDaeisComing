@@ -14,6 +14,8 @@ namespace Bathhouse.NPC
     /// </summary>
     public class NPCInteractionController : MonoBehaviour
     {
+        public event Action<NPC_Base, bool> OnInteractionResolved;
+
         [SerializeField] private NPC_Base _npcBase;
         
         private NPCInteractionSpeechBubbleUI _speechBubbleUI;
@@ -103,7 +105,6 @@ namespace Bathhouse.NPC
         {
             return facility == FacilityType.Counter ||
                    facility == FacilityType.TowelStorage ||
-                   facility == FacilityType.TowelReturn ||
                    // ScrubArea는 ScrubAreaFacility에서 직접 말풍선을 띄우므로 중복을 피하기 위해 제외합니다.
                    facility == FacilityType.Platform;
         }
@@ -140,6 +141,9 @@ namespace Bathhouse.NPC
 
             ApplySatisfactionReward(reward, phase);
             
+            bool isSuccess = phase < 3; // 3이 타임아웃
+            OnInteractionResolved?.Invoke(_npcBase, isSuccess);
+
             // 말풍선을 클릭하면 대기 시간을 즉시 건너뛰고 다음 행동으로 넘어감
             if (_npcBase != null)
             {
@@ -160,6 +164,7 @@ namespace Bathhouse.NPC
             
             Debug.Log($"[{_npcBase.Data.name}] 상호작용 타임아웃!");
             ApplySatisfactionReward(penalty, timeoutPhase);
+            OnInteractionResolved?.Invoke(_npcBase, false);
         }
 
         private int GetPhaseFromRatio(float ratio)

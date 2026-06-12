@@ -1,4 +1,4 @@
-﻿using Bathhouse.UI;
+using Bathhouse.UI;
 using Bathhouse.Data;
 using Bathhouse.Managers;
 using UnityEngine;
@@ -100,6 +100,12 @@ namespace Bathhouse.Facilities
             npc.ForceFinishCurrentAction(); // 성공 시 강제 종료
         }
 
+        protected override void RecordUsageAndIncome(NPC_Base npc = null)
+        {
+            // ExitFacility에서 base 호출 시 불리는 이 메서드는 무시합니다. (때밀이는 성공 시에만 반영해야 하므로)
+            // 대신 ExitFacility에서 성공 여부를 판단 후 수동으로 반영합니다.
+        }
+
         public override void ExitFacility(NPC_Base npc, int slotIndex)
         {
             base.ExitFacility(npc, slotIndex);
@@ -116,9 +122,9 @@ namespace Bathhouse.Facilities
 
             if (_scrubCompleted.ContainsKey(npc) && _scrubCompleted[npc])
             {
-                // npc.Brain.bathCount++; (신규 라우트 시스템에서는 불필요)
                 Debug.Log($"[ScrubArea] {npc.Data.name} 때밀이 완료! (요금 지불함)");
-                // 추후 코스트 지불 로직 추가
+                // 부모의 원래 통계/수익 로직을 수동으로 호출
+                base.RecordUsageAndIncome(npc);
             }
             else
             {

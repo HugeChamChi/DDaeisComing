@@ -43,12 +43,13 @@ namespace Bathhouse.Facilities
                 clickButton.onClick.AddListener(TriggerMinigame);
             }
 
-            UpdateUI();
-
-            if (MiniGameManager.Instance != null && Bathhouse.Managers.GameManager.Instance != null)
+            if (GameManager.MiniGame != null && Bathhouse.Managers.GameManager.Instance != null)
             {
+                // GameManager.MiniGame.RegisterTrashBin(this);
                 Bathhouse.Managers.GameManager.Instance.OnNextDayStarted += ReduceGauge;
             }
+
+            UpdateUI();
         }
 
         private void OnDestroy()
@@ -91,14 +92,14 @@ namespace Bathhouse.Facilities
             if (state.isMinigamePlaying) return;
             if (state.currentGauge <= 0) return; // 치울 쓰레기가 없으면 상호작용 안 함
 
-            if (MiniGameManager.Instance != null)
+            if (GameManager.MiniGame != null)
             {
                 state.isMinigamePlaying = true;
-                MiniGameManager.Instance.ShowTrashBinMinigame(this);
+                GameManager.MiniGame.ShowTrashBinMinigame(this);
             }
             else
             {
-                Debug.LogError("[TrashBinController] MiniGameManager.Instance 가 없습니다.");
+                Debug.LogError("[TrashBinController] GameManager.MiniGame 가 없습니다.");
             }
         }
 
