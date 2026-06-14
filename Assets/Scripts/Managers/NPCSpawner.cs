@@ -17,6 +17,7 @@ namespace Bathhouse.Managers
         [SerializeField] private NPC_Base npcPrefab;
         [SerializeField] private NPCData defaultNpcData;
         [SerializeField] private NPCRouteProfileSO defaultRouteProfile;
+        public DailySpawnDataSO dailySpawnData;
         [SerializeField] private float spawnInterval = 5f;
 
         private Vector3 _spawnPosition;
@@ -111,8 +112,31 @@ namespace Bathhouse.Managers
         {
             if (_spawnCts != null) return;
             
+            UpdateSpawnInterval();
+
             _spawnCts = new CancellationTokenSource();
             SpawnRoutine(_spawnCts.Token).Forget();
+        }
+
+        private void UpdateSpawnInterval()
+        {
+            int currentDay = 1;
+            // TODO: 만약 Day 저장 방식이 바뀐다면 아래 로직 수정
+            if (global::GlobalManagers.Data != null && global::GlobalManagers.Data.Current != null)
+            {
+                currentDay = global::GlobalManagers.Data.Current.currentDay;
+            }
+            
+            if (dailySpawnData != null)
+            {
+                int dailyCustomerCount = dailySpawnData.GetCustomerCount(currentDay);
+                spawnInterval = 100f / dailyCustomerCount;
+                Debug.Log($"[NPCSpawner] Day {currentDay}: 목표 손님 수 {dailyCustomerCount}명, 스폰 간격 {spawnInterval:F2}초");
+            }
+            else
+            {
+                Debug.LogWarning("[NPCSpawner] dailySpawnData가 할당되지 않았습니다. 기존 설정된 스폰 간격을 사용합니다.");
+            }
         }
 
         public void StopSpawning()

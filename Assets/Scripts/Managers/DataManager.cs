@@ -19,6 +19,7 @@ namespace Bathhouse.Managers
 
         public FacilityIncomeDataSO IncomeDataSO { get; private set; }
         public GameConfigSO Config { get; private set; }
+        public RentDataSO RentData { get; private set; }
 
         public void InitializeData()
         {
@@ -29,6 +30,13 @@ namespace Bathhouse.Managers
             {
                 Debug.LogWarning("[DataManager] GameConfig를 Resources 폴더에서 찾을 수 없습니다! 기본값을 사용하려면 Resources 폴더에 'GameConfig' SO를 생성하세요.");
                 Config = ScriptableObject.CreateInstance<GameConfigSO>();
+            }
+
+            RentData = Resources.Load<RentDataSO>("RentData");
+            if (RentData == null)
+            {
+                Debug.LogWarning("[DataManager] RentData를 Resources 폴더에서 찾을 수 없습니다! 기본값을 사용하려면 Resources 폴더에 'RentData' SO를 생성하세요.");
+                RentData = ScriptableObject.CreateInstance<RentDataSO>();
             }
 
             if (_inspectorIncomeDataSO != null)

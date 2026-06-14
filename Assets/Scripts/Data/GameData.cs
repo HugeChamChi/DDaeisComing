@@ -65,8 +65,8 @@ namespace Bathhouse.Data
         /// </summary>
         public int GetTodayNetProfit()
         {
-            // 수익 - 지출 - 고정유지비
-            return todayIncome - todayExpense - dailyMaintenanceCost;
+            // 수익 - 지출
+            return todayIncome - todayExpense;
         }
 
         /// <summary>

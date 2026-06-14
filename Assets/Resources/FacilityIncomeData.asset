@@ -13,23 +13,28 @@ MonoBehaviour:
   m_Name: FacilityIncomeData
   m_EditorClassIdentifier: 
   incomeEntries:
+  - facilityType: 1
+    incomeData:
+      incomeAmount: 100
+      resultText: "\uC785\uC7A5\uB8CC"
+      icon: {fileID: 1727677709, guid: fef34a021efcf5b40aad667741676774, type: 3}
   - facilityType: 4
     incomeData:
-      incomeAmount: 500
+      incomeAmount: 100
       resultText: "\uC77C\uD68C\uC6A9\uD488 \uAD6C\uB9E4"
       icon: {fileID: 21300000, guid: 9ece27a2624998547a25a6b8c0deb039, type: 3}
   - facilityType: 3
     incomeData:
-      incomeAmount: 800
+      incomeAmount: 200
       resultText: "\uC6C0\uB8CC \uAD6C\uB9E4"
       icon: {fileID: 21300000, guid: 8534ed17a8542024f886aa1f37414785, type: 3}
   - facilityType: 10
     incomeData:
-      incomeAmount: 2000
+      incomeAmount: 500
       resultText: "\uB54C\uBC00\uC774 \uBC1B\uAE30"
       icon: {fileID: 21300000, guid: 27131296a75ef644187894ada8bcc325, type: 3}
   - facilityType: 8
     incomeData:
-      incomeAmount: 600
+      incomeAmount: 100
       resultText: "\uB9CC\uC96C \uC0AC \uBA39\uAE30"
       icon: {fileID: 21300000, guid: 75900277b51b8934d8c2397c0a2bd523, type: 3}

@@ -42,6 +42,7 @@ namespace Bathhouse.Managers
         public event Action OnNoMoreCustomers;
         public event Action OnDayEnded;
         public event Action OnNextDayStarted;
+        public event Action OnGameOver;
 
         private float currentDayTime = 0f;
         private bool isNoMoreCustomersTriggered = false;
@@ -89,6 +90,35 @@ namespace Bathhouse.Managers
             if (currentDayTime >= dayDuration)
             {
                 isDayEnded = true;
+
+                // 하루 종료 시 정산: 유지비 및 월세를 당일 지출에 합산
+                if (global::GlobalManagers.Data != null)
+                {
+                    var gameData = global::GlobalManagers.Data.Current;
+                    var rentData = global::GlobalManagers.Data.RentData;
+                    var dailyRecord = global::GlobalManagers.Data.DailyRecord;
+
+                    if (gameData != null)
+                    {
+                        if (dailyRecord != null)
+                        {
+                            gameData.todayIncome = dailyRecord.totalIncome;
+                        }
+
+                        int additionalExpense = gameData.dailyMaintenanceCost;
+                        
+                        // 월세 납부일인지 확인
+                        if (rentData != null && rentData.IsRentDay(gameData.currentDay))
+                        {
+                            additionalExpense += rentData.GetRentAmount(gameData.currentDay);
+                        }
+
+                        // 당일 지출 및 레코드에 반영 (UI에서 표시하기 위함)
+                        gameData.todayExpense += additionalExpense;
+                        dailyRecord?.AddExpense(additionalExpense);
+                    }
+                }
+
                 OnDayEnded?.Invoke();
             }
         }
@@ -101,6 +131,19 @@ namespace Bathhouse.Managers
 
             if (global::GlobalManagers.Data != null)
             {
+                var gameData = global::GlobalManagers.Data.Current;
+
+                if (gameData != null)
+                {
+                    // 순수익(Net Profit)이 마이너스라도 최종 보유금액으로 메꿀 수 있다면 파산하지 않음
+                    if (gameData.currentGold + gameData.GetTodayNetProfit() < 0)
+                    {
+                        Debug.Log($"[GameManager] 월세 및 지출을 감당할 자금이 부족하여 파산했습니다! (최종 예상 자금: {gameData.currentGold + gameData.GetTodayNetProfit()})");
+                        OnGameOver?.Invoke();
+                        return; // 다음 날로 넘어가지 않고 즉시 종료
+                    }
+                }
+
                 global::GlobalManagers.Data.Current?.AdvanceToNextDay();
                 global::GlobalManagers.Data.DailyRecord?.Reset();
                 global::GlobalManagers.Data.SaveData();

@@ -1149,7 +1149,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.64001465, y: -0.16998291}
+  m_AnchoredPosition: {x: 0.6401367, y: -0.16992188}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &136288475
@@ -2133,7 +2133,7 @@ PrefabInstance:
     - target: {fileID: 4526562449740967646, guid: ed6c9d30dbe4f1f42a71fa7272e8e066,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 28630
+      value: 28631
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -12640,7 +12640,7 @@ PrefabInstance:
     - target: {fileID: 4526562449740967646, guid: ed6c9d30dbe4f1f42a71fa7272e8e066,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 28628
+      value: 28629
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -14986,7 +14986,7 @@ PrefabInstance:
     - target: {fileID: 4526562449740967646, guid: ed6c9d30dbe4f1f42a71fa7272e8e066,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 29028
+      value: 29029
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -15586,7 +15586,7 @@ PrefabInstance:
     - target: {fileID: 1584598479466307983, guid: 785d986dbc8a3484d874f49cec5a2821,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 29243
+      value: 29244
       objectReference: {fileID: 0}
     - target: {fileID: 2783644997720154662, guid: 785d986dbc8a3484d874f49cec5a2821,
         type: 3}
@@ -24504,7 +24504,7 @@ PrefabInstance:
     - target: {fileID: 4526562449740967646, guid: ed6c9d30dbe4f1f42a71fa7272e8e066,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 28626
+      value: 28627
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -26624,7 +26624,7 @@ PrefabInstance:
     - target: {fileID: 4526562449740967646, guid: ed6c9d30dbe4f1f42a71fa7272e8e066,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 29026
+      value: 29027
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -27340,10 +27340,15 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1237083472}
     m_Modifications:
+    - target: {fileID: 200270598887849457, guid: 24556de957745314b9801d6cb7787dd9,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 866445887377703508, guid: 24556de957745314b9801d6cb7787dd9,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 29364
+      value: 29365
       objectReference: {fileID: 0}
     - target: {fileID: 2783644997720154662, guid: 24556de957745314b9801d6cb7787dd9,
         type: 3}
@@ -27470,6 +27475,7 @@ MonoBehaviour:
   defaultNpcData: {fileID: 11400000, guid: 672ddf1c00d5ef347a7d4d351c72180b, type: 2}
   defaultRouteProfile: {fileID: 11400000, guid: 5eb0a770e9b44bb46b9748a382944c37,
     type: 2}
+  dailySpawnData: {fileID: 11400000, guid: 2da5126c649522e4f9f009df90efa66a, type: 2}
   spawnInterval: 5
 --- !u!4 &1970426015
 Transform:
@@ -27494,6 +27500,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1237083472}
     m_Modifications:
+    - target: {fileID: 988661568893948658, guid: 9ec9520f571985a4ab93a3ce41175858,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2783644997720154662, guid: 9ec9520f571985a4ab93a3ce41175858,
         type: 3}
       propertyPath: m_Name
@@ -27577,7 +27588,7 @@ PrefabInstance:
     - target: {fileID: 4069557965029115680, guid: 9ec9520f571985a4ab93a3ce41175858,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 28970
+      value: 28971
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
