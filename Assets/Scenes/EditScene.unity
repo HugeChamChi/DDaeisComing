@@ -29249,7 +29249,7 @@ MonoBehaviour:
   scrubMiniGame: {fileID: 828617715}
   trashMiniGame: {fileID: 858307927}
   beverageMinigame: {fileID: 1790468701}
-  towelMiniGame: {fileID: 0}
+  towelMiniGame: {fileID: 6739209226152834787}
   testDay: 1
 --- !u!1001 &1525306508
 PrefabInstance:
@@ -29765,7 +29765,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   btnReset: {fileID: 1585237026}
-  confirmPanel: {fileID: 1600656493}
+  confirmPanel: {fileID: 1119981538}
   btnConfirm: {fileID: 1251243499}
   btnCancel: {fileID: 36959048}
 --- !u!1 &1600656493
