@@ -43,10 +43,12 @@ namespace Bathhouse.Managers
         public event Action OnDayEnded;
         public event Action OnNextDayStarted;
         public event Action OnGameOver;
+        public event Action OnGameStarted;
 
         private float currentDayTime = 0f;
         private bool isNoMoreCustomersTriggered = false;
         private bool isDayEnded = false;
+        private bool isGameStarted = false;
 
         public float CurrentDayTime => currentDayTime;
         public float DayDuration => global::GlobalManagers.Data?.Config?.dayDurationSeconds ?? 60f;
@@ -74,7 +76,7 @@ namespace Bathhouse.Managers
 
         private void Update()
         {
-            if (isDayEnded || global::GlobalManagers.Data?.Current == null) return;
+            if (!isGameStarted || isDayEnded || global::GlobalManagers.Data?.Current == null) return;
 
             currentDayTime += Time.deltaTime;
 
@@ -116,6 +118,7 @@ namespace Bathhouse.Managers
                         // 당일 지출 및 레코드에 반영 (UI에서 표시하기 위함)
                         gameData.todayExpense += additionalExpense;
                         dailyRecord?.AddExpense(additionalExpense);
+
                     }
                 }
 
@@ -153,6 +156,23 @@ namespace Bathhouse.Managers
             OnNextDayStarted?.Invoke();
             
             Debug.Log("[GameManager] 다음 날 사이클이 시작되었습니다.");
+        }
+
+        public void StartGame()
+        {
+            if (isGameStarted) return;
+            
+            isGameStarted = true;
+            isDayEnded = false;
+            currentDayTime = 0f;
+            isNoMoreCustomersTriggered = false;
+
+            OnGameStarted?.Invoke();
+            
+            // 첫 날(Day 1) 연출 및 시작을 위해 이벤트를 강제로 한 번 발생시킵니다.
+            OnNextDayStarted?.Invoke();
+            
+            Debug.Log("[GameManager] 게임이 최초 시작되었습니다.");
         }
     }
 }

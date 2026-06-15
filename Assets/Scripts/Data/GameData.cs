@@ -49,7 +49,7 @@ namespace Bathhouse.Data
             currentGold = 1000; // 초기 자본
             
             // 첫날 유지비 예시 (0일 수도 있고, 기획에 따라 다름)
-            dailyMaintenanceCost = 500; 
+            dailyMaintenanceCost = 0; 
             
             todayIncome = 0;
             todayExpense = 0;
@@ -88,8 +88,8 @@ namespace Bathhouse.Data
             // 다음 날짜로 변경
             currentDay++;
 
-            // 유지비 증가
-            dailyMaintenanceCost = 500 + (currentDay * 100);
+            // 유지비 증가 (일단 없도록 변경)
+            dailyMaintenanceCost = 0;
 
             // 당일 정산 기록 초기화
             todayIncome = 0;

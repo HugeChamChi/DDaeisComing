@@ -14,6 +14,7 @@ namespace Bathhouse.NPC
         private readonly NPC_Base _npcBase;
         private int _currentStepIndex = 0;
         private FacilityType _lastDeterminedFacility = FacilityType.None;
+        private bool _hasVisitedBath = false;
 
         public NPCRouteController(NPCRouteProfileSO routeProfile, NPC_Base npcBase)
         {
@@ -21,12 +22,14 @@ namespace Bathhouse.NPC
             _npcBase = npcBase;
             _currentStepIndex = 0;
             _lastDeterminedFacility = FacilityType.None;
+            _hasVisitedBath = false;
         }
 
         public void ResetRoute()
         {
             _currentStepIndex = 0;
             _lastDeterminedFacility = FacilityType.None;
+            _hasVisitedBath = false;
         }
 
         /// <summary>
@@ -46,11 +49,12 @@ namespace Bathhouse.NPC
                 if (step.isMandatory)
                 {
                     _lastDeterminedFacility = step.structureType;
+                    if (step.structureType == FacilityType.Bath) _hasVisitedBath = true;
                     return step.structureType;
                 }
                 else
                 {
-                    if (step.structureType == FacilityType.ScrubArea && _lastDeterminedFacility != FacilityType.Bath)
+                    if (step.structureType == FacilityType.ScrubArea && !_hasVisitedBath)
                     {
                         Debug.Log($"<color=#FFA500>[동선 규칙]</color> {_npcBase.Data.name} - Bath를 거치지 않아서 <b>{step.structureType}</b> 패스함.");
                         continue;
@@ -64,6 +68,7 @@ namespace Bathhouse.NPC
                     {
                         Debug.Log($"<color=#00FFFF>[동선 확률]</color> {_npcBase.Data.name} - {finalProbability * 100f:F1}% 확률로 <b>{step.structureType}</b> 이용 결정! (주사위 결과: {diceRoll * 100f:F1}%)");
                         _lastDeterminedFacility = step.structureType;
+                        if (step.structureType == FacilityType.Bath) _hasVisitedBath = true;
                         return step.structureType;
                     }
                     else

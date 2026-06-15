@@ -1,4 +1,4 @@
-﻿using Bathhouse.Data;
+using Bathhouse.Data;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Bathhouse.Grid;
@@ -63,9 +63,21 @@ namespace Bathhouse.Test
 
             // 3. NPC 스포너 시작 (MapConfig에 저장된 spawnGridPos 참조)
             npcSpawner.Initialize(gridMap, facilityBuilder.mapConfig.spawnGridPos.x, facilityBuilder.mapConfig.spawnGridPos.y);
-            npcSpawner.StartSpawning();
+            
+            // 게임 시작 이벤트를 구독하여 그때 스폰을 시작하도록 변경
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnGameStarted += () => {
+                    npcSpawner.StartSpawning();
+                };
+            }
+            else
+            {
+                // GameManager가 없다면 그냥 바로 시작
+                npcSpawner.StartSpawning();
+            }
 
-            Debug.Log("[SceneTestRunner] 테스트 준비 완료. NPC 스폰을 시작합니다.");
+            Debug.Log("[SceneTestRunner] 테스트 준비 완료. 시작 버튼 클릭 대기 중...");
         }
     }
 }
