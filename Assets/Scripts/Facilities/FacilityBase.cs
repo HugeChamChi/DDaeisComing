@@ -80,6 +80,31 @@ namespace Bathhouse.Facilities
             }
 
             RefreshPosition();
+            EnsureInteractionCollider();
+        }
+
+        /// <summary>
+        /// 모바일 및 EventSystem을 통해 IPointerClickHandler 등의 터치/클릭을 받을 수 있도록
+        /// 기본 2D 콜라이더를 보장합니다.
+        /// </summary>
+        protected virtual void EnsureInteractionCollider()
+        {
+            if (GetComponent<Collider2D>() == null)
+            {
+                var col = gameObject.AddComponent<BoxCollider2D>();
+                col.isTrigger = true;
+                
+                var visualRenderer = GetComponentInChildren<SpriteRenderer>();
+                if (visualRenderer != null && visualRenderer.sprite != null)
+                {
+                    col.size = visualRenderer.sprite.bounds.size;
+                    col.offset = visualRenderer.transform.localPosition + visualRenderer.sprite.bounds.center;
+                }
+                else
+                {
+                    col.size = new Vector2(_data != null ? _data.width : 1f, _data != null ? _data.height : 1f);
+                }
+            }
         }
 
         protected virtual void Awake()

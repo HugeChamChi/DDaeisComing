@@ -367,6 +367,7 @@ GameObject:
   - component: {fileID: 290702963430851999}
   - component: {fileID: 6865258962641896498}
   - component: {fileID: 6726884357862791271}
+  - component: {fileID: 2798500105634139546}
   m_Layer: 0
   m_Name: Button
   m_TagString: Untagged
@@ -476,6 +477,33 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2798500105634139546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8340629604348331124}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c9b9a14230e644b9762e5d3aa24e5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationTarget: {fileID: 6377730120627069742}
+  triggerType: 1
+  ignoreTimeScale: 0
+  isLoop: 0
+  ease: 6
+  duration: 0.5
+  delay: 0
+  easeIn: 27
+  durationIn: 0.3
+  delayIn: 0
+  easeOut: 26
+  durationOut: 0.2
+  delayOut: 0
+  startScale: {x: 0.3, y: 0.3, z: 0.3}
+  endScale: {x: 1, y: 1, z: 1}
 --- !u!1 &8390939112899126741
 GameObject:
   m_ObjectHideFlags: 0

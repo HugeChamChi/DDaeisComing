@@ -14,6 +14,9 @@ public class iOSBuildScript
 
         string buildPath = "Builds/iOS";
 
+        Debug.Log("Setting Scripting Define Symbols for iOS...");
+        PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.iOS, "DOTWEEN;UNITASK_DOTWEEN_SUPPORT");
+
         Debug.Log("Starting iOS Build to: " + buildPath);
 
         BuildPipeline.BuildPlayer(

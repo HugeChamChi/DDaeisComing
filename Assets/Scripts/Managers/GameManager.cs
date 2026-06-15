@@ -107,7 +107,7 @@ namespace Bathhouse.Managers
                             gameData.todayIncome = dailyRecord.totalIncome;
                         }
 
-                        int additionalExpense = gameData.dailyMaintenanceCost;
+                        int additionalExpense = 0;
                         
                         // 월세 납부일인지 확인
                         if (rentData != null && rentData.IsRentDay(gameData.currentDay))
@@ -119,6 +119,8 @@ namespace Bathhouse.Managers
                         gameData.todayExpense += additionalExpense;
                         dailyRecord?.AddExpense(additionalExpense);
 
+                        // 결과창이 뜨기 전 수익/지출 즉시 정산 반영
+                        gameData.ApplyTodayProfit();
                     }
                 }
 
@@ -138,10 +140,10 @@ namespace Bathhouse.Managers
 
                 if (gameData != null)
                 {
-                    // 순수익(Net Profit)이 마이너스라도 최종 보유금액으로 메꿀 수 있다면 파산하지 않음
-                    if (gameData.currentGold + gameData.GetTodayNetProfit() < 0)
+                    // 순수익(Net Profit)이 반영된 후의 최종 자금이 마이너스라면 파산 처리
+                    if (gameData.currentGold < 0)
                     {
-                        Debug.Log($"[GameManager] 월세 및 지출을 감당할 자금이 부족하여 파산했습니다! (최종 예상 자금: {gameData.currentGold + gameData.GetTodayNetProfit()})");
+                        Debug.Log($"[GameManager] 월세 및 지출을 감당할 자금이 부족하여 파산했습니다! (현재 자금: {gameData.currentGold})");
                         OnGameOver?.Invoke();
                         return; // 다음 날로 넘어가지 않고 즉시 종료
                     }

@@ -911,6 +911,7 @@ GameObject:
   - component: {fileID: 4560657020524919169}
   - component: {fileID: 5652599229740881261}
   - component: {fileID: 1211880471558037044}
+  - component: {fileID: 3565281570358841187}
   m_Layer: 0
   m_Name: ButtonUI
   m_TagString: Untagged
@@ -935,7 +936,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -3.1599731, y: -2.1939697}
+  m_AnchoredPosition: {x: -2.6400146, y: -2.1939697}
   m_SizeDelta: {x: 1.47, y: 1}
   m_Pivot: {x: 0, y: 0}
 --- !u!222 &5652599229740881261
@@ -966,7 +967,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1389727520, guid: 3a30d844d794cab40a723c3c17206034, type: 3}
+  m_Sprite: {fileID: -730077218, guid: 098372cb674b4f64aab4861466266275, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -976,6 +977,33 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3565281570358841187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7311351853899669822}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c9b9a14230e644b9762e5d3aa24e5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationTarget: {fileID: 0}
+  triggerType: 1
+  ignoreTimeScale: 0
+  isLoop: 0
+  ease: 6
+  duration: 0.5
+  delay: 0
+  easeIn: 27
+  durationIn: 0.3
+  delayIn: 0
+  easeOut: 26
+  durationOut: 0.2
+  delayOut: 0
+  startScale: {x: 0.3, y: 0.3, z: 0.3}
+  endScale: {x: 1, y: 1, z: 1}
 --- !u!1 &7886189548734529265
 GameObject:
   m_ObjectHideFlags: 0

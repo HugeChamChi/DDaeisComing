@@ -19,6 +19,12 @@ namespace Bathhouse.Managers
         {
             base.Init();
             
+            // 모바일 및 EventSystem 기반 2D 터치 인터랙션을 위해 메인 카메라에 Physics2DRaycaster를 보장합니다.
+            if (Camera.main != null && Camera.main.GetComponent<UnityEngine.EventSystems.Physics2DRaycaster>() == null)
+            {
+                Camera.main.gameObject.AddComponent<UnityEngine.EventSystems.Physics2DRaycaster>();
+            }
+
             // Resources/Facilities 폴더 내의 모든 FacilityData 에셋을 로드합니다.
             var dataList = Resources.LoadAll<FacilityData>("Facilities");
             foreach (var d in dataList)

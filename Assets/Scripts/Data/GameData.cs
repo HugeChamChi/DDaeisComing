@@ -26,9 +26,6 @@ namespace Bathhouse.Data
         public int currentDay;
         public int currentGold; // 누적 자산 (보유 골드)
         
-        // 하루 시작 시 주어지는 고정 지출이나 목표 (난이도 역할)
-        public int dailyMaintenanceCost;
-
         // 당일 정산용 데이터 (하루가 넘어갈 때마다 초기화됨)
         public int todayIncome;
         public int todayExpense;
@@ -42,14 +39,14 @@ namespace Bathhouse.Data
         public int totalCustomersServed;
         public int totalFacilitiesBuilt;
 
+        // 상점 및 업그레이드 세이브 데이터
+        public ShopSaveData shopData;
+
         // JSON 직렬화를 위한 빈 생성자
         public GameData()
         {
             currentDay = 1;
             currentGold = 1000; // 초기 자본
-            
-            // 첫날 유지비 예시 (0일 수도 있고, 기획에 따라 다름)
-            dailyMaintenanceCost = 0; 
             
             todayIncome = 0;
             todayExpense = 0;
@@ -58,6 +55,8 @@ namespace Bathhouse.Data
             
             totalCustomersServed = 0;
             totalFacilitiesBuilt = 0;
+
+            shopData = new ShopSaveData();
         }
 
         /// <summary>
@@ -78,18 +77,20 @@ namespace Bathhouse.Data
         }
 
         /// <summary>
+        /// 당일 순이익을 누적 자산에 반영합니다.
+        /// </summary>
+        public void ApplyTodayProfit()
+        {
+            currentGold += GetTodayNetProfit();
+        }
+
+        /// <summary>
         /// 다음 날로 넘어갈 때 호출하여 정산 및 Day 증가 처리를 합니다.
         /// </summary>
         public void AdvanceToNextDay()
         {
-            // 순이익을 누적 자산에 반영
-            currentGold += GetTodayNetProfit();
-
             // 다음 날짜로 변경
             currentDay++;
-
-            // 유지비 증가 (일단 없도록 변경)
-            dailyMaintenanceCost = 0;
 
             // 당일 정산 기록 초기화
             todayIncome = 0;

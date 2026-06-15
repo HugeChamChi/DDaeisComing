@@ -58,5 +58,21 @@ namespace Bathhouse.Facilities
             currentPollution = 0f;
             OnPollutionChanged?.Invoke(currentPollution, maxPollution);
         }
+
+        protected virtual void Start()
+        {
+            if (Bathhouse.Managers.GameManager.Instance != null)
+            {
+                Bathhouse.Managers.GameManager.Instance.OnNextDayStarted += PurifyWater;
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (Bathhouse.Managers.GameManager.Instance != null)
+            {
+                Bathhouse.Managers.GameManager.Instance.OnNextDayStarted -= PurifyWater;
+            }
+        }
     }
 }

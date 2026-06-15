@@ -165,12 +165,12 @@ SpriteRenderer:
   m_SortingLayerID: 991944485
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 91779615cc5005e4fb2ea67a9af36163, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 45ba08a4c37525e4abc22ff966b1500a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 5.12, y: 5.12}
+  m_Size: {x: 0.885, y: 1.275}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -290,6 +290,7 @@ GameObject:
   - component: {fileID: 4711118979422137905}
   - component: {fileID: 7552939809260349733}
   - component: {fileID: 1115361361514186695}
+  - component: {fileID: 1059847787673060635}
   m_Layer: 0
   m_Name: ButtonUI
   m_TagString: Untagged
@@ -355,6 +356,33 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1059847787673060635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3563140450043343211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c9b9a14230e644b9762e5d3aa24e5b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationTarget: {fileID: 4711118979422137905}
+  triggerType: 1
+  ignoreTimeScale: 0
+  isLoop: 0
+  ease: 6
+  duration: 0.5
+  delay: 0
+  easeIn: 27
+  durationIn: 0.3
+  delayIn: 0
+  easeOut: 26
+  durationOut: 0.2
+  delayOut: 0
+  startScale: {x: 0.3, y: 0.3, z: 0.3}
+  endScale: {x: 1, y: 1, z: 1}
 --- !u!1 &3737863192817867191
 GameObject:
   m_ObjectHideFlags: 0

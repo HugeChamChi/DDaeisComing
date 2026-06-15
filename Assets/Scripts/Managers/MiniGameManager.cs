@@ -11,6 +11,7 @@ namespace Bathhouse.Managers
         [Header("Mini Games")]
         public ScrubMiniGameUI scrubMiniGame;
         public TrashMiniGameUI trashMiniGame;
+        public DDaeisComing.Minigames.Beverage.BeverageMinigameUI beverageMinigame;
 
         public bool IsAnyMiniGamePlaying
         {
@@ -18,7 +19,8 @@ namespace Bathhouse.Managers
             {
                 bool scrubPlaying = scrubMiniGame != null && scrubMiniGame.gamePanel != null && scrubMiniGame.gamePanel.activeInHierarchy;
                 bool trashPlaying = trashMiniGame != null && trashMiniGame.gamePanel != null && trashMiniGame.gamePanel.activeInHierarchy;
-                return scrubPlaying || trashPlaying;
+                bool beveragePlaying = beverageMinigame != null && beverageMinigame.gameObject.activeInHierarchy;
+                return scrubPlaying || trashPlaying || beveragePlaying;
             }
         }
 
@@ -62,6 +64,10 @@ namespace Bathhouse.Managers
             if (trashMiniGame != null && trashMiniGame.gamePanel != null && trashMiniGame.gamePanel.activeInHierarchy)
             {
                 trashMiniGame.gamePanel.SetActive(false);
+            }
+            if (beverageMinigame != null && beverageMinigame.gameObject.activeInHierarchy)
+            {
+                beverageMinigame.CloseMinigame();
             }
         }
 
@@ -127,6 +133,18 @@ namespace Bathhouse.Managers
             {
                 Debug.LogWarning("[MiniGameManager] Trash Mini Game is not assigned.");
                 targetBin.SetMinigamePlaying(false);
+            }
+        }
+
+        public void ShowBeverageMinigame(BeverageDispenserFacility targetFacility)
+        {
+            if (beverageMinigame != null)
+            {
+                beverageMinigame.OpenMinigame();
+            }
+            else
+            {
+                Debug.LogWarning("[MiniGameManager] Beverage Mini Game is not assigned.");
             }
         }
     }

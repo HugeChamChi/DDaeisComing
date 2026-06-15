@@ -112,6 +112,22 @@ namespace Bathhouse.Facilities
             Debug.Log("[TowelReturn] 수건 수거함을 비웠습니다.");
         }
 
+        protected virtual void Start()
+        {
+            if (Bathhouse.Managers.GameManager.Instance != null)
+            {
+                Bathhouse.Managers.GameManager.Instance.OnNextDayStarted += EmptyStorage;
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (Bathhouse.Managers.GameManager.Instance != null)
+            {
+                Bathhouse.Managers.GameManager.Instance.OnNextDayStarted -= EmptyStorage;
+            }
+        }
+
         private void InstantiateDroppedTowel(Vector3 position)
         {
             if (droppedTowelPrefab == null)
