@@ -38,10 +38,11 @@ namespace Bathhouse.Facilities
                 }
             }
             
-            if (clickButton != null)
-            {
-                clickButton.onClick.AddListener(TriggerMinigame);
-            }
+            // 직접 클릭 대체: 청소는 TrashBinButtonController의 말풍선 버튼으로만 트리거합니다.
+            // if (clickButton != null)
+            // {
+            //     clickButton.onClick.AddListener(TriggerMinigame);
+            // }
 
             if (GameManager.MiniGame != null && Bathhouse.Managers.GameManager.Instance != null)
             {
@@ -83,8 +84,8 @@ namespace Bathhouse.Facilities
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            // UI를 클릭했을 때 실행됨
-            TriggerMinigame();
+            // 직접 클릭 대체: 청소는 TrashBinButtonController의 말풍선 버튼으로만 트리거합니다.
+            // TriggerMinigame();
         }
 
         private void TriggerMinigame()
