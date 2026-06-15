@@ -36,12 +36,22 @@ namespace Bathhouse.Facilities
         {
             if (currentTowels >= maxTowels + 4)
             {
-                Debug.Log("[TowelReturn] TODO: 미니게임 실행");
-                // TODO: 미니게임 호출 로직
+                // 가득 차면 수건 줍기(스포트라이트) 미니게임 실행, 성공 시 수거함 비움
+                if (GameManager.MiniGame != null)
+                {
+                    GameManager.MiniGame.ShowTowelMinigame(
+                        onSuccess: EmptyStorage,
+                        onFail: () => Debug.Log("[TowelReturn] 미니게임 실패 - 수거함은 그대로 가득 찬 상태입니다."));
+                }
+                else
+                {
+                    Debug.LogWarning("[TowelReturn] MiniGameManager(GameManager.MiniGame)가 없습니다.");
+                }
             }
             else
             {
-                EmptyStorage();
+                // 가득 차지 않았으면 아무 일도 하지 않음 (클릭으로 그냥 비워지면 안 됨)
+                Debug.Log($"[TowelReturn] 아직 가득 차지 않아 미니게임을 실행하지 않습니다. ({currentTowels}/{maxTowels + 4})");
             }
         }
 

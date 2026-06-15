@@ -12,6 +12,7 @@ namespace Bathhouse.Managers
         public ScrubMiniGameUI scrubMiniGame;
         public TrashMiniGameUI trashMiniGame;
         public DDaeisComing.Minigames.Beverage.BeverageMinigameUI beverageMinigame;
+        public SpotlightMiniGameUI towelMiniGame;
 
         public bool IsAnyMiniGamePlaying
         {
@@ -20,7 +21,8 @@ namespace Bathhouse.Managers
                 bool scrubPlaying = scrubMiniGame != null && scrubMiniGame.gamePanel != null && scrubMiniGame.gamePanel.activeInHierarchy;
                 bool trashPlaying = trashMiniGame != null && trashMiniGame.gamePanel != null && trashMiniGame.gamePanel.activeInHierarchy;
                 bool beveragePlaying = beverageMinigame != null && beverageMinigame.gameObject.activeInHierarchy;
-                return scrubPlaying || trashPlaying || beveragePlaying;
+                bool towelPlaying = towelMiniGame != null && towelMiniGame.gamePanel != null && towelMiniGame.gamePanel.activeInHierarchy;
+                return scrubPlaying || trashPlaying || beveragePlaying || towelPlaying;
             }
         }
 
@@ -68,6 +70,10 @@ namespace Bathhouse.Managers
             if (beverageMinigame != null && beverageMinigame.gameObject.activeInHierarchy)
             {
                 beverageMinigame.CloseMinigame();
+            }
+            if (towelMiniGame != null && towelMiniGame.gamePanel != null && towelMiniGame.gamePanel.activeInHierarchy)
+            {
+                towelMiniGame.gamePanel.SetActive(false);
             }
         }
 
@@ -145,6 +151,40 @@ namespace Bathhouse.Managers
             else
             {
                 Debug.LogWarning("[MiniGameManager] Beverage Mini Game is not assigned.");
+            }
+        }
+
+        [Button("Test Start Towel Game")]
+        public void TestStartTowelGame()
+        {
+            if (towelMiniGame != null)
+            {
+                Debug.Log($"[MiniGameManager] Testing Towel Mini Game for Day {testDay}");
+                towelMiniGame.StartMiniGame(testDay,
+                    () => Debug.Log("Towel Game Success Callback!"),
+                    () => Debug.Log("Towel Game Fail Callback!"));
+            }
+            else
+            {
+                Debug.LogWarning("[MiniGameManager] Towel Mini Game is not assigned.");
+            }
+        }
+
+        public void ShowTowelMinigame(System.Action onSuccess = null, System.Action onFail = null)
+        {
+            if (towelMiniGame != null)
+            {
+                int dayToUse = testDay;
+                if (global::GlobalManagers.Data != null && global::GlobalManagers.Data.Current != null)
+                {
+                    dayToUse = global::GlobalManagers.Data.Current.currentDay;
+                }
+
+                towelMiniGame.StartMiniGame(dayToUse, onSuccess, onFail);
+            }
+            else
+            {
+                Debug.LogWarning("[MiniGameManager] Towel Mini Game is not assigned.");
             }
         }
     }
