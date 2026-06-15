@@ -20,13 +20,18 @@ namespace DDaeisComing.Minigames.Beverage
         public void SetEmpty()
         {
             isFilled = false;
-            if (beverageImage != null && emptySprite != null)
+            if (beverageImage != null)
             {
                 beverageImage.sprite = emptySprite;
-                beverageImage.color = new Color(1, 1, 1, 0); // Hide or show empty sprite properly, assuming emptySprite might be null or transparent
                 
-                if (emptySprite != null)
+                if (emptySprite == null)
                 {
+                    // Sprite가 없으면 완전 투명하게 만들어 비어 보이게 처리
+                    beverageImage.color = new Color(1, 1, 1, 0);
+                }
+                else
+                {
+                    // Sprite가 있으면 보이게 처리
                     beverageImage.color = Color.white;
                 }
             }

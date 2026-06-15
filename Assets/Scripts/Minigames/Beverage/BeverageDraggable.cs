@@ -13,6 +13,7 @@ namespace DDaeisComing.Minigames.Beverage
 
         private Vector3 initialPosition;
         private Transform initialParent;
+        private int initialSiblingIndex;
         
         public BeverageMinigameController minigameController;
 
@@ -20,12 +21,11 @@ namespace DDaeisComing.Minigames.Beverage
         {
             rectTransform = GetComponent<RectTransform>();
             canvasGroup = GetComponent<CanvasGroup>();
-        }
 
-        private void Start()
-        {
+            // Awake 시점에서 저장하여 프리팹 초기 배치 상태 유지
             initialPosition = rectTransform.anchoredPosition;
             initialParent = transform.parent;
+            initialSiblingIndex = transform.GetSiblingIndex();
         }
 
         public void ResetPosition()
@@ -33,9 +33,16 @@ namespace DDaeisComing.Minigames.Beverage
             if (initialParent != null)
             {
                 transform.SetParent(initialParent);
+                transform.SetSiblingIndex(initialSiblingIndex);
             }
             rectTransform.anchoredPosition = initialPosition;
             if (canvasGroup != null) canvasGroup.blocksRaycasts = true;
+            
+            // LayoutGroup 등을 사용할 경우 강제 갱신
+            if (initialParent != null)
+            {
+                UnityEngine.UI.LayoutRebuilder.MarkLayoutForRebuild(initialParent as RectTransform);
+            }
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -71,9 +78,10 @@ namespace DDaeisComing.Minigames.Beverage
                 }
             }
             
-            // Invalid drop, snap back to original position
+            // Invalid drop, snap back to original position and order
             rectTransform.position = originalPosition;
             transform.SetParent(originalParent);
+            transform.SetSiblingIndex(initialSiblingIndex);
         }
     }
 }
