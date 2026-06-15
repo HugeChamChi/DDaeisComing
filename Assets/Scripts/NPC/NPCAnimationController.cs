@@ -1,4 +1,6 @@
+using System.Threading;
 using Bathhouse.Data;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Bathhouse.NPC
@@ -21,6 +23,13 @@ namespace Bathhouse.NPC
         
         private bool _isUsingFacility = false;
         private string _currentStateName = "";
+
+        [Header("One-shot Action Settings")]
+        [Tooltip("바디 드라이어 연출 클립 길이(초). 이 시간이 지나면 마지막 프레임에 갇히지 않고 Idle로 복귀합니다.")]
+        [SerializeField] private float _bodyDryerClipLength = 0.6f;
+
+        // 한 번만 재생하는 액션이 끝난 뒤 Idle로 복귀시키는 UniTask 취소 토큰
+        private CancellationTokenSource _returnToIdleCts;
 
         private void Awake()
         {
@@ -179,6 +188,23 @@ namespace Bathhouse.NPC
                 }
                 _currentStateName = actionName;
             }
+            else if (facilityType == FacilityType.BodyDryer)
+            {
+                string actionName = "Action_BodyDryer";
+                if (_animator != null)
+                {
+                    _animator.Play(actionName);
+                }
+                _currentStateName = actionName;
+
+                // 드라이어 스프라이트는 좌우 반대로 그려져 있어, 일반 flip과 반대로 적용 (드라이어 전용 예외)
+                ApplyDryerFacingFlip();
+
+                // 연출 클립이 끝나면 마지막 프레임에 갇히지 않도록 Idle로 복귀
+                CancelReturnToIdle();
+                _returnToIdleCts = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy());
+                ReturnToIdleAfterOneShot(_bodyDryerClipLength, _returnToIdleCts.Token).Forget();
+            }
             else
             {
                 // 플랫폼이 아닌 경우 방향에 맞는 Idle 모션 재생
@@ -199,12 +225,88 @@ namespace Bathhouse.NPC
 
         public void StopFacilityAction()
         {
+            CancelReturnToIdle();
+
             _isUsingFacility = false;
             _currentStateName = ""; // Update 루프에서 즉시 Idle/Move 로 복귀됨
         }
 
+        /// <summary>
+        /// _lastDirection 기준으로 일반 좌우 반전을 적용합니다. (FaceTarget/Update와 동일한 컨벤션)
+        /// </summary>
+        private void ApplyNormalFacingFlip()
+        {
+            if (_visualTransform == null) return;
+
+            Vector3 scale = _visualTransform.localScale;
+            if (_lastDirection.x > 0) scale.x = -Mathf.Abs(scale.x); // 오른쪽
+            else                      scale.x =  Mathf.Abs(scale.x); // 왼쪽
+            _visualTransform.localScale = scale;
+        }
+
+        /// <summary>
+        /// 드라이어 전용 좌우 반전. 드라이어 스프라이트가 반대로 그려져 있어 일반 flip과 부호를 반대로 적용합니다.
+        /// </summary>
+        private void ApplyDryerFacingFlip()
+        {
+            if (_visualTransform == null) return;
+
+            Vector3 scale = _visualTransform.localScale;
+            if (_lastDirection.x > 0) scale.x =  Mathf.Abs(scale.x); // 오른쪽(드라이어 예외)
+            else                      scale.x = -Mathf.Abs(scale.x); // 왼쪽(드라이어 예외)
+            _visualTransform.localScale = scale;
+        }
+
+        /// <summary>
+        /// Idle 복귀 대기 중인 UniTask를 취소하고 토큰 소스를 정리합니다.
+        /// </summary>
+        private void CancelReturnToIdle()
+        {
+            if (_returnToIdleCts != null)
+            {
+                _returnToIdleCts.Cancel();
+                _returnToIdleCts.Dispose();
+                _returnToIdleCts = null;
+            }
+        }
+
+        /// <summary>
+        /// 한 번만 재생하는 액션 클립(바디 드라이어 등)이 끝난 뒤,
+        /// 마지막 프레임에 멈춰 있지 않도록 방향에 맞는 Idle 포즈로 복귀시킵니다.
+        /// 시설 이용 상태(_isUsingFacility)는 유지하여 이동 모션으로 튀지 않게 합니다.
+        /// </summary>
+        private async UniTaskVoid ReturnToIdleAfterOneShot(float clipLength, CancellationToken token)
+        {
+            bool canceled = await UniTask.Delay(
+                System.TimeSpan.FromSeconds(clipLength),
+                cancellationToken: token).SuppressCancellationThrow();
+
+            if (canceled) return;
+
+            // 아직 시설 이용 중일 때만 Idle로 전환 (이미 퇴장했으면 무시)
+            if (_isUsingFacility)
+            {
+                // 드라이어 예외로 뒤집었던 flip을 일반 캐릭터 스프라이트용으로 복원
+                ApplyNormalFacingFlip();
+
+                string idleState = GetStateName(false);
+                if (_animator != null && _currentStateName != idleState)
+                {
+                    _animator.Play(idleState);
+                    _currentStateName = idleState;
+                }
+
+                if (_proceduralAnimator != null)
+                {
+                    _proceduralAnimator.PlayState(NPCProceduralAnimator.ProceduralState.Idle);
+                }
+            }
+        }
+
         public void ResetAnimation()
         {
+            CancelReturnToIdle();
+
             _isUsingFacility = false;
             _currentStateName = "";
             _lastDirection = Vector2.down; // 기본 방향 아래로

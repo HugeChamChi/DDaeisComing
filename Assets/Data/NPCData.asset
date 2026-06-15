@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4db7e41008a0ea8438be2dc866981b1a, type: 3}
   m_Name: NPCData
   m_EditorClassIdentifier: 
-  moveSpeed: 2
+  moveSpeed: 5
   showerTime: 3
   bathTime: 5
   scrubTime: 4

@@ -19,9 +19,8 @@ MonoBehaviour:
   interactionOffsets:
   - {x: -1, y: 0}
   maxCapacity: 1
-  baseUseTime: 5
+  baseUseTime: 2
   usageCooldown: 0
-  cost: 0
   cleanlinessDropPerUse: 5
   visualPrefab: {fileID: 2783644997720154662, guid: 898bd45b68dd73949b63a7c3a3d78f08,
     type: 3}
