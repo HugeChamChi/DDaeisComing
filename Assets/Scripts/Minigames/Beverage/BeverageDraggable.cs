@@ -17,19 +17,36 @@ namespace DDaeisComing.Minigames.Beverage
         
         public BeverageMinigameController minigameController;
 
+        private bool _initialized;
+
         private void Awake()
         {
+            EnsureInitialized();
+        }
+
+        /// <summary>
+        /// 컴포넌트 참조와 초기 배치 정보를 확보합니다.
+        /// Awake가 아직 돌지 않은 상태(비활성 상태에서 ResetPosition 호출 등)에서도 안전하도록 방어합니다.
+        /// </summary>
+        private void EnsureInitialized()
+        {
+            if (_initialized) return;
+
             rectTransform = GetComponent<RectTransform>();
             canvasGroup = GetComponent<CanvasGroup>();
 
-            // Awake 시점에서 저장하여 프리팹 초기 배치 상태 유지
+            // 초기 배치 상태 저장 (프리팹 초기 위치 유지)
             initialPosition = rectTransform.anchoredPosition;
             initialParent = transform.parent;
             initialSiblingIndex = transform.GetSiblingIndex();
+
+            _initialized = true;
         }
 
         public void ResetPosition()
         {
+            EnsureInitialized();
+
             if (initialParent != null)
             {
                 transform.SetParent(initialParent);
