@@ -112,6 +112,22 @@ namespace Bathhouse.UI
                         slotAnimDelay += 0.15f; // 다음 슬롯은 0.15초 뒤에 올라옴
                     }
                 }
+
+                // 월세 납부일인 경우 월세 항목 추가
+                var gameData = global::GlobalManagers.Data.Current;
+                var rentData = global::GlobalManagers.Data.RentData;
+                if (gameData != null && rentData != null && rentData.IsRentDay(gameData.currentDay))
+                {
+                    int rentAmount = rentData.GetRentAmount(gameData.currentDay);
+                    
+                    // 아이콘은 null, 월세 표시, 고정 지출 처리
+                    SalesSlotUI slot = CreateResultItem(null, "월세", 1, -rentAmount, -rentAmount, true);
+                    if (slot != null)
+                    {
+                        slot.PlayAnimInAsync(slotAnimDelay).Forget();
+                        slotAnimDelay += 0.15f;
+                    }
+                }
             }
 
             // 시간 타이머를 멈추기 위해 Time.timeScale 조절
@@ -148,7 +164,7 @@ namespace Bathhouse.UI
             if (txtNetProfit != null) txtNetProfit.text = targetNetProfit.ToComma("원");
         }
 
-        private SalesSlotUI CreateResultItem(Sprite icon, string name, int count, int costPerUse, int totalEarned)
+        private SalesSlotUI CreateResultItem(Sprite icon, string name, int count, int costPerUse, int totalEarned, bool isFixedCost = false)
         {
             if (resultItemPrefab == null || itemContainer == null) return null;
 
@@ -156,7 +172,7 @@ namespace Bathhouse.UI
             SalesSlotUI slotUI = go.GetComponent<SalesSlotUI>();
             if (slotUI != null)
             {
-                slotUI.SetData(icon, name, count, costPerUse, totalEarned);
+                slotUI.SetData(icon, name, count, costPerUse, totalEarned, isFixedCost);
             }
             else
             {
