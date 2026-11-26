@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51224fbd8fef881488852a845f7a31e2, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
-  dayDurationSeconds: 10
+  dayDurationSeconds: 180
   noCustomerTimeThreshold: 30

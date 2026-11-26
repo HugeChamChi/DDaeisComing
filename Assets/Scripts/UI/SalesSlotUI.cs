@@ -19,8 +19,9 @@ namespace Bathhouse.UI
         private int _targetCount;
         private int _costPerUse;
         private int _targetTotalEarned;
+        private bool _isFixedCost;
 
-        public void SetData(Sprite icon, string name, int count, int costPerUse, int totalEarned)
+        public void SetData(Sprite icon, string name, int count, int costPerUse, int totalEarned, bool isFixedCost = false)
         {
             if (imgIcon != null)
             {
@@ -41,10 +42,15 @@ namespace Bathhouse.UI
             _targetCount = count;
             _costPerUse = costPerUse;
             _targetTotalEarned = totalEarned;
+            _isFixedCost = isFixedCost;
 
             // 초기값 0으로 세팅
-            if (txtCalculation != null) txtCalculation.text = $"0회 x {costPerUse.ToComma("원")}";
-            if (txtTotalCost != null) txtTotalCost.text = "+0원";
+            if (txtCalculation != null) 
+            {
+                if (_isFixedCost) txtCalculation.text = "고정 지출";
+                else txtCalculation.text = $"0회 x {costPerUse.ToComma("원")}";
+            }
+            if (txtTotalCost != null) txtTotalCost.text = "0원";
         }
 
         public async UniTask PlayAnimInAsync(float delaySeconds)
@@ -84,8 +90,16 @@ namespace Bathhouse.UI
                 int currentCount = Mathf.RoundToInt(Mathf.Lerp(0f, _targetCount, easeOutT));
                 int currentTotal = Mathf.RoundToInt(Mathf.Lerp(0f, _targetTotalEarned, easeOutT));
 
-                if (txtCalculation != null) txtCalculation.text = $"{currentCount.ToComma("회")} x {_costPerUse.ToComma("원")}";
-                if (txtTotalCost != null) txtTotalCost.text = $"+{currentTotal.ToComma("원")}";
+                if (txtCalculation != null) 
+                {
+                    if (!_isFixedCost) txtCalculation.text = $"{currentCount.ToComma("회")} x {_costPerUse.ToComma("원")}";
+                }
+                
+                if (txtTotalCost != null) 
+                {
+                    if (currentTotal > 0) txtTotalCost.text = $"+{currentTotal.ToComma("원")}";
+                    else txtTotalCost.text = $"{currentTotal.ToComma("원")}"; // 0 or negative
+                }
 
                 // PostLateUpdate에서 덮어씌워야 VerticalLayoutGroup과의 충돌을 피할 수 있습니다.
                 rect.localPosition = Vector3.Lerp(startPos, targetPos, easeOutT);
@@ -97,8 +111,16 @@ namespace Bathhouse.UI
             {
                 canvasGroup.alpha = 1f;
                 // 애니메이션 완료 후 정확한 최종값 고정
-                if (txtCalculation != null) txtCalculation.text = $"{_targetCount.ToComma("회")} x {_costPerUse.ToComma("원")}";
-                if (txtTotalCost != null) txtTotalCost.text = $"+{_targetTotalEarned.ToComma("원")}";
+                if (txtCalculation != null) 
+                {
+                    if (!_isFixedCost) txtCalculation.text = $"{_targetCount.ToComma("회")} x {_costPerUse.ToComma("원")}";
+                }
+                
+                if (txtTotalCost != null) 
+                {
+                    if (_targetTotalEarned > 0) txtTotalCost.text = $"+{_targetTotalEarned.ToComma("원")}";
+                    else txtTotalCost.text = $"{_targetTotalEarned.ToComma("원")}";
+                }
             }
         }
     }
