@@ -75,3 +75,7 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 /.agent_orchestrator
 /Assets/Imports
+
+# AI harness: per-PC lane board, session logs (Tools/harness, .claude/hooks)
+/production/
+__pycache__/
